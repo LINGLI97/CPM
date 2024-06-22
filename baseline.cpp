@@ -795,7 +795,7 @@ int main (int argc, char *argv[])
         }
         cout<<": ";
         for (INT i = 0;i < pattern_size + 2 * l ;i ++){
-            if (i == l or i == pattern_size+l){
+            if (i == l or i == pattern_size + l){
                 cout<<" ";
             }
             cout<<text_string[SA[interval.first] + i];
@@ -803,22 +803,21 @@ int main (int argc, char *argv[])
         cout<<std::endl;
     }
 
-    // After computing SA_rev
+
     printArray("SA_rev", SA_rev, n);
 
-// After computing invSA_rev
+
     printArray("invSA_rev", invSA_rev, n);
 
-// After computing LCP_rev
+
     printArray("LCP_rev", LCP_rev, n);
 
-// After computing SA
     printArray("SA", SA, n);
 
-// After computing invSA
+
     printArray("invSA", invSA, n);
 
-// After computing LCP
+
     printArray("LCP", LCP, n);
 
 
