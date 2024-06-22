@@ -795,6 +795,9 @@ int main (int argc, char *argv[])
         }
         cout<<": ";
         for (INT i = 0;i < pattern_size + 2 * l ;i ++){
+            if (i == l or i == pattern_size+l){
+                cout<<" ";
+            }
             cout<<text_string[SA[interval.first] + i];
         }
         cout<<std::endl;
