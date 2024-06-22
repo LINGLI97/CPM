@@ -448,7 +448,7 @@ void findSubIntervalsRMQ(INT s, INT e, INT t, INT * LCP, rmq_succinct_sct<> &rmq
 
         }
         INT current_start = s;
-        // 输出所有区间
+        // get all subintervals
         for (INT i = 1; i < breakPoints.size(); ++i) {
             INT current_breakpoint = breakPoints[i];
 
@@ -622,11 +622,7 @@ int main (int argc, char *argv[])
 #ifdef _USE_32
     if( divsufsort(text_string_rev, SA_rev,  n ) != 0 )
         {
-            free(text_string);
-            free(text_string_rev);
-            free(SA_rev);
-            free(invSA_rev);
-            free(LCP_rev);
+
             fprintf(stderr, " Error: SA computation failed.\n" );
             exit( EXIT_FAILURE );
         }
@@ -826,6 +822,7 @@ int main (int argc, char *argv[])
     free(text_string);
     free(text_string_rev);
     free(pattern);
+    free(pattern_rev);
 
     free(SA_rev);
     free(invSA_rev);
