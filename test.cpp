@@ -80,7 +80,7 @@ unsigned char* reverseReturn(unsigned char* &s) {
     unsigned char* reversed_s = ( unsigned char * ) malloc (  ( length + 1 ) * sizeof ( unsigned char ) );
 
 
-    for (int i = 0; i < length; i++) {
+    for (INT i = 0; i < length; i++) {
         reversed_s[i] = s[length - 1 - i];
     }
     reversed_s[length] = '\0'; // Don't forget to null-terminate the new string
@@ -292,7 +292,7 @@ void findSubIntervalsRMQ(INT s, INT e, INT t, INT * LCP, rmq_succinct_sct<> &rmq
 //                continue;
 //            }
 
-            int p = rmq(range.s, range.e);
+            INT p = rmq(range.s, range.e);
             if (LCP[p] < t) {
                 if (range.s < p) {
                     ranges.push(Range(range.s, p - 1));
@@ -426,7 +426,7 @@ int main (int argc, char *argv[])
     for (INT r =0; r< NumRound; r++){
 
        // Generate a random length for text_string that is less than max_text_length
-        int text_size = min_text_length + rand() % (max_text_length - min_text_length + 1);
+        INT text_size = min_text_length + rand() % (max_text_length - min_text_length + 1);
 
         // Allocate memory for text_string
         unsigned char* text_string = (unsigned char*)malloc((text_size + 1) * sizeof(unsigned char));
@@ -449,8 +449,8 @@ int main (int argc, char *argv[])
         unsigned char* pattern = (unsigned char*)malloc((pattern_size + 1) * sizeof(unsigned char));
 
         // Extract a substring from text_string to use as pattern
-        int start = rand() % (text_size - pattern_size + 1);  // Choose a random starting point
-        for (int i = 0; i < pattern_size; i++) {
+        INT start = rand() % (text_size - pattern_size + 1);  // Choose a random starting point
+        for (INT i = 0; i < pattern_size; i++) {
             pattern[i] = text_string[start + i];
         }
         pattern[pattern_size] = '\0';  // Add null terminator to mark the end of the pattern
@@ -646,6 +646,30 @@ int main (int argc, char *argv[])
 
         util::clear(v2);
 
+        /* Construct C array*/
+
+        INT* C;
+        C = ( INT * ) malloc( ( n ) * sizeof( INT ) );
+        if( ( C == NULL) )
+        {
+            fprintf(stderr, " Error: Cannot allocate memory for C.\n" );
+            return ( 0 );
+        }
+
+        for (INT i = 0; i < n; i++) {
+            C[i] = invSA[n - SA_rev[i] -1];
+        }
+
+        int_vector<> v3( n , 0 ); // create a vector of length n and initialize it with 0s
+
+        for ( INT i = 0; i < n; i ++ )
+        {
+            v3[i] = C[i];
+        }
+
+        rmq_succinct_sct<> rmq_C(&v3);
+
+        util::clear(v3);
 
 /*Given P and context length l, use RMQ function to partition the intervals*/
         pair<INT,INT> interval_rev = pattern_matching (pattern_rev, text_string_rev, SA_rev,  LCP_rev, rmq_rev, n,  pattern_size);
@@ -670,46 +694,49 @@ int main (int argc, char *argv[])
         //Mapping the suffix array intervals of the reversed string to the intervals of the normal string
         for (pair<INT, INT> subInterval: subIntervalsRMQ){
             INT normalIntervalFirst,normalIntervalSecond;
-            INT indexFirst = n - pattern_size - l  - SA_rev[subInterval.first];
-            INT indexSecond = n - pattern_size - l  - SA_rev[subInterval.second];
+            INT indexFirst = n - pattern_size - l  - SA_rev[rmq_C(subInterval.first,subInterval.second)];
+//            INT indexSecond = n - pattern_size - l  - SA_rev[rmq_C(subInterval.first,subInterval.second)];
 
             if ( indexFirst< 0){
                 continue;
             } else{
                 normalIntervalFirst = invSA[indexFirst];
-
+                normalIntervalSecond = normalIntervalFirst + subInterval.second - subInterval.first;
             }
 
-            if(indexSecond<0) {
-                continue;
 
+
+
+
+            if (normalIntervalFirst < normalIntervalSecond){
+                IntervalsMapped.push_back({normalIntervalFirst, normalIntervalSecond});
             } else{
-                normalIntervalSecond = invSA[indexSecond];
-
+                IntervalsMapped.push_back({normalIntervalSecond, normalIntervalFirst});
             }
-            if (abs(normalIntervalSecond - normalIntervalFirst) == abs(subInterval.second - subInterval.first)){
-                if (normalIntervalFirst < normalIntervalSecond){
-                    IntervalsMapped.push_back({normalIntervalFirst, normalIntervalSecond});
-                } else{
-                    IntervalsMapped.push_back({normalIntervalSecond, normalIntervalFirst});
-                }
 
-            } else{
-                INT Min = min(normalIntervalFirst,normalIntervalSecond);
-                INT Max = max(normalIntervalFirst,normalIntervalSecond);
-
-                for (INT i = subInterval.first+1; i < subInterval.second; i++){
-                    INT tmp = invSA[n - pattern_size - l  - SA_rev[i]];
-                    if (tmp>Max){
-                        Max = tmp;
-                    }
-                    if (tmp< Min){
-                        Min = tmp;
-                    }
-                }
-                IntervalsMapped.push_back({Min, Max});
-
-            }
+//            if (abs(normalIntervalSecond - normalIntervalFirst) == abs(subInterval.second - subInterval.first)){
+//                if (normalIntervalFirst < normalIntervalSecond){
+//                    IntervalsMapped.push_back({normalIntervalFirst, normalIntervalSecond});
+//                } else{
+//                    IntervalsMapped.push_back({normalIntervalSecond, normalIntervalFirst});
+//                }
+//
+//            } else{
+//                INT Min = min(normalIntervalFirst,normalIntervalSecond);
+//                INT Max = max(normalIntervalFirst,normalIntervalSecond);
+//
+//                for (INT i = subInterval.first+1; i < subInterval.second; i++){
+//                    INT tmp = invSA[n - pattern_size - l  - SA_rev[i]];
+//                    if (tmp>Max){
+//                        Max = tmp;
+//                    }
+//                    if (tmp< Min){
+//                        Min = tmp;
+//                    }
+//                }
+//                IntervalsMapped.push_back({Min, Max});
+//
+//            }
 
 
         }
@@ -841,7 +868,7 @@ int main (int argc, char *argv[])
 
             for (const auto& entry : resultsNaive) {
                 cout << "Substring: " << entry.first << " at positions: ";
-                for (int pos : entry.second) {
+                for (INT pos : entry.second) {
                     cout << pos << " ";
                 }
                 cout << endl;
@@ -867,6 +894,8 @@ int main (int argc, char *argv[])
         free(SA);
         free(invSA);
         free(LCP);
+        free(C);
+
 
         }
         cout<<NumRound<<" tests are finished successfully"<<endl;

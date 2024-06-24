@@ -80,7 +80,7 @@ unsigned char* reverseReturn(unsigned char* &s) {
     unsigned char* reversed_s = ( unsigned char * ) malloc (  ( length + 1 ) * sizeof ( unsigned char ) );
 
 
-    for (int i = 0; i < length; i++) {
+    for (INT i = 0; i < length; i++) {
         reversed_s[i] = s[length - 1 - i];
     }
     reversed_s[length] = '\0'; // Don't forget to null-terminate the new string
@@ -292,7 +292,7 @@ void findSubIntervalsRMQ(INT s, INT e, INT t, INT * LCP, rmq_succinct_sct<> &rmq
 //                continue;
 //            }
 
-            int p = rmq(range.s, range.e);
+            INT p = rmq(range.s, range.e);
             if (LCP[p] < t) {
                 if (range.s < p) {
                     ranges.push(Range(range.s, p - 1));
@@ -604,6 +604,32 @@ int main (int argc, char *argv[])
     util::clear(v2);
 
 
+    /* Construct C array*/
+
+    INT* C;
+    C = ( INT * ) malloc( ( n ) * sizeof( INT ) );
+    if( ( C == NULL) )
+    {
+        fprintf(stderr, " Error: Cannot allocate memory for C.\n" );
+        return ( 0 );
+    }
+
+    for (INT i = 0; i < n; i++) {
+        C[i] = invSA[n - SA_rev[i] -1];
+
+    }
+
+    int_vector<> v3( n , 0 ); // create a vector of length n and initialize it with 0s
+
+    for ( INT i = 0; i < n; i ++ )
+    {
+        v3[i] = C[i];
+    }
+
+    rmq_succinct_sct<> rmq_C(&v3);
+
+    util::clear(v3);
+
 //
 //
 //    printArray("SA_rev", SA_rev, n);
@@ -653,51 +679,55 @@ int main (int argc, char *argv[])
     std::vector<std::pair<INT, INT>> IntervalsMapped;
 
     //Mapping the suffix array intervals of the reversed string to the intervals of the normal string
+
+
     for (pair<INT, INT> subInterval: subIntervalsRMQ){
         INT normalIntervalFirst,normalIntervalSecond;
-        INT indexFirst = n - pattern_size - l  - SA_rev[subInterval.first];
-        INT indexSecond = n - pattern_size - l  - SA_rev[subInterval.second];
+        INT indexFirst = n - pattern_size - l  - SA_rev[rmq_C(subInterval.first,subInterval.second)];
+//            INT indexSecond = n - pattern_size - l  - SA_rev[rmq_C(subInterval.first,subInterval.second)];
 
         if ( indexFirst< 0){
             continue;
         } else{
             normalIntervalFirst = invSA[indexFirst];
-
+            normalIntervalSecond = normalIntervalFirst + subInterval.second - subInterval.first;
         }
 
-        if(indexSecond<0) {
-            continue;
 
+
+        if (normalIntervalFirst < normalIntervalSecond){
+            IntervalsMapped.push_back({normalIntervalFirst, normalIntervalSecond});
         } else{
-            normalIntervalSecond = invSA[indexSecond];
-
+            IntervalsMapped.push_back({normalIntervalSecond, normalIntervalFirst});
         }
-        if (abs(normalIntervalSecond - normalIntervalFirst) == abs(subInterval.second - subInterval.first)){
-            if (normalIntervalFirst < normalIntervalSecond){
-                IntervalsMapped.push_back({normalIntervalFirst, normalIntervalSecond});
-            } else{
-                IntervalsMapped.push_back({normalIntervalSecond, normalIntervalFirst});
-            }
 
-        } else{
-            INT Min = min(normalIntervalFirst,normalIntervalSecond);
-            INT Max = max(normalIntervalFirst,normalIntervalSecond);
-
-            for (INT i = subInterval.first+1; i < subInterval.second; i++){
-                INT tmp = invSA[n - pattern_size - l  - SA_rev[i]];
-                if (tmp>Max){
-                    Max = tmp;
-                }
-                if (tmp< Min){
-                    Min = tmp;
-                }
-            }
-            IntervalsMapped.push_back({Min, Max});
-
-        }
+//            if (abs(normalIntervalSecond - normalIntervalFirst) == abs(subInterval.second - subInterval.first)){
+//                if (normalIntervalFirst < normalIntervalSecond){
+//                    IntervalsMapped.push_back({normalIntervalFirst, normalIntervalSecond});
+//                } else{
+//                    IntervalsMapped.push_back({normalIntervalSecond, normalIntervalFirst});
+//                }
+//
+//            } else{
+//                INT Min = min(normalIntervalFirst,normalIntervalSecond);
+//                INT Max = max(normalIntervalFirst,normalIntervalSecond);
+//
+//                for (INT i = subInterval.first+1; i < subInterval.second; i++){
+//                    INT tmp = invSA[n - pattern_size - l  - SA_rev[i]];
+//                    if (tmp>Max){
+//                        Max = tmp;
+//                    }
+//                    if (tmp< Min){
+//                        Min = tmp;
+//                    }
+//                }
+//                IntervalsMapped.push_back({Min, Max});
+//
+//            }
 
 
     }
+
 
 
 
@@ -898,6 +928,6 @@ int main (int argc, char *argv[])
     free(invSA);
     free(LCP);
 
-
+    free(C);
 
 }
