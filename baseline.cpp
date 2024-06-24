@@ -670,8 +670,8 @@ int main (int argc, char *argv[])
 
 
 
-    std::vector<std::pair<INT, INT>> subIntervalsScaning;
-    findSubIntervalsScaning(interval_rev.first, interval_rev.second, pattern_size + l , LCP_rev, subIntervalsScaning);
+//    std::vector<std::pair<INT, INT>> subIntervalsScaning;
+//    findSubIntervalsScaning(interval_rev.first, interval_rev.second, pattern_size + l , LCP_rev, subIntervalsScaning);
 
 
 
@@ -741,8 +741,8 @@ int main (int argc, char *argv[])
         std::vector<std::pair<INT, INT>> subIntervalsRMQNormal;
         findSubIntervalsRMQ( subInterval.first, subInterval.second, pattern_size + 2 * l , LCP, rmq, subIntervalsRMQNormal);
 
-        std::vector<std::pair<INT, INT>> subIntervalsScaningNormal;
-        findSubIntervalsScaning( subInterval.first, subInterval.second, pattern_size + 2 * l , LCP, subIntervalsScaningNormal);
+//        std::vector<std::pair<INT, INT>> subIntervalsScaningNormal;
+//        findSubIntervalsScaning( subInterval.first, subInterval.second, pattern_size + 2 * l , LCP, subIntervalsScaningNormal);
 
         for (pair<INT, INT> subsubInterval: subIntervalsRMQNormal){
             if ((n - pattern_size - 2 * l  - SA[subsubInterval.first] < 0 ) or (n - pattern_size - 2 * l  - SA[subsubInterval.second] < 0)){
