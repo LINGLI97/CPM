@@ -42,4 +42,28 @@ clean-all:
 	rm -r sdsl-lite
 
 
+
+
+Test_EXE=    run_test
+
+Test_SRC=    test.cpp
+
+Test_HD=     baseline.h cmdline.h Makefile
+
+
+Test_OBJ=    $(Test_SRC:.cpp=.o)
+
+
+test:    $(Test_EXE)
+
+$(Test_EXE): $(Test_OBJ)
+	$(CC) $(CFLAGS) -o $@ $(Test_OBJ) $(LFLAGS)
+
+$(Test_OBJ): $(MF) $(Test_HD)
+
+clean_test:
+	rm -f $(Test_OBJ) $(Test_EXE) *~
+
+
+
 .PHONY: all clean
