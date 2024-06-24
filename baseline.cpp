@@ -606,24 +606,24 @@ int main (int argc, char *argv[])
 
 //
 //
-    printArray("SA_rev", SA_rev, n);
-
-
-    printArray("invSA_rev", invSA_rev, n);
-
-
-    printArray("LCP_rev", LCP_rev, n);
-
-    printArray("SA", SA, n);
-
-
-    printArray("invSA", invSA, n);
-
-
-    printArray("LCP", LCP, n);
-
-    printstring("SA->string",SA, n,text_string);
-    printstring("SA_rev->string",SA_rev, n,text_string_rev);
+//    printArray("SA_rev", SA_rev, n);
+//
+//
+//    printArray("invSA_rev", invSA_rev, n);
+//
+//
+//    printArray("LCP_rev", LCP_rev, n);
+//
+//    printArray("SA", SA, n);
+//
+//
+//    printArray("invSA", invSA, n);
+//
+//
+//    printArray("LCP", LCP, n);
+//
+//    printstring("SA->string",SA, n,text_string);
+//    printstring("SA_rev->string",SA_rev, n,text_string_rev);
 
 
 
