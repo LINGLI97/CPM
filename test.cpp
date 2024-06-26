@@ -697,11 +697,12 @@ int main (int argc, char *argv[])
             INT indexFirst = n - pattern_size - l  - SA_rev[rmq_C(subInterval.first,subInterval.second)];
 //            INT indexSecond = n - pattern_size - l  - SA_rev[rmq_C(subInterval.first,subInterval.second)];
 
-            if ( indexFirst< 0){
-                continue;
-            } else{
+            if ( indexFirst > -1){
                 normalIntervalFirst = invSA[indexFirst];
                 normalIntervalSecond = normalIntervalFirst + subInterval.second - subInterval.first;
+            } else{
+                continue;
+
             }
 
 
@@ -754,10 +755,11 @@ int main (int argc, char *argv[])
             findSubIntervalsRMQ( subInterval.first, subInterval.second, pattern_size + 2 * l , LCP, rmq, subIntervalsRMQNormal);
 
             for (pair<INT, INT> subsubInterval: subIntervalsRMQNormal){
-                if ((n - pattern_size - 2 * l  - SA[subsubInterval.first] < 0 ) or (n - pattern_size - 2 * l  - SA[subsubInterval.second] < 0)){
-                    continue;
-                } else{
+                if (n - pattern_size - 2 * l  - SA[subsubInterval.first] > -1  ){
                     subIntervalsRMQNonNeg.push_back(subsubInterval);
+                } else{
+                    continue;
+
                 }
             }
         }
@@ -791,6 +793,8 @@ int main (int argc, char *argv[])
 
 
         }
+
+
         /*Naive checkers*/
 
         unordered_map<string, vector<INT>> resultsNaive;

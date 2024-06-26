@@ -341,11 +341,7 @@ void findSubIntervalsScaning(INT s, INT e, INT t, INT * LCP, std::vector<std::pa
     }
 
     //P only one occurrence
-    if (s == e){
-     subIntervals.push_back({s,e});
-
-    } else{
-
+    if (s < e){
         INT current_start = s;
 
         for (INT i = s + 1; i < e +1; ++i) {
@@ -364,6 +360,8 @@ void findSubIntervalsScaning(INT s, INT e, INT t, INT * LCP, std::vector<std::pa
         if (current_start < e +1) {
             subIntervals.push_back({current_start, e});
         }
+    } else{
+        subIntervals.push_back({s,e});
 
 
     }
@@ -686,11 +684,12 @@ int main (int argc, char *argv[])
         INT indexFirst = n - pattern_size - l  - SA_rev[rmq_C(subInterval.first,subInterval.second)];
 //            INT indexSecond = n - pattern_size - l  - SA_rev[rmq_C(subInterval.first,subInterval.second)];
 
-        if ( indexFirst< 0){
-            continue;
-        } else{
+        if ( indexFirst > -1){
             normalIntervalFirst = invSA[indexFirst];
             normalIntervalSecond = normalIntervalFirst + subInterval.second - subInterval.first;
+        } else{
+            continue;
+
         }
 
 
@@ -745,10 +744,10 @@ int main (int argc, char *argv[])
 //        findSubIntervalsScaning( subInterval.first, subInterval.second, pattern_size + 2 * l , LCP, subIntervalsScaningNormal);
 
         for (pair<INT, INT> subsubInterval: subIntervalsRMQNormal){
-            if ((n - pattern_size - 2 * l  - SA[subsubInterval.first] < 0 ) or (n - pattern_size - 2 * l  - SA[subsubInterval.second] < 0)){
-                continue;
-            } else{
+            if (n - pattern_size - 2 * l  - SA[subsubInterval.first] > -1){
                 subIntervalsRMQNonNeg.push_back(subsubInterval);
+            } else{
+                continue;
             }
         }
 
@@ -822,18 +821,17 @@ int main (int argc, char *argv[])
             INT indexFirst = n - m - l  - SA_rev[interval.first];
             INT indexSecond = n - m - l  - SA_rev[interval.second];
             //indexFirst/ indexSecond <0 indicate this interval will be discarded
-            if ( indexFirst< 0){
-                continue;
-            } else{
+            if ( indexFirst > -1){
                 normalIntervalFirst = invSA[indexFirst];
 
+            } else{
+                continue;
             }
 
-            if(indexSecond<0) {
-                continue;
-
-            } else{
+            if(indexSecond > -1) {
                 normalIntervalSecond = invSA[indexSecond];
+            } else{
+                continue;
 
             }
 
@@ -871,10 +869,11 @@ int main (int argc, char *argv[])
             findSubIntervalsScaning( interval.first, interval.second, m + 2 * l , LCP, subIntervalsScaningMining);
 
             for (pair<INT, INT> subsubInterval: subIntervalsScaningMining){
-                if (n - m - 2 * l  - SA[subsubInterval.first] < 0 ){
-                    continue;
-                } else{
+                if (n - m - 2 * l  - SA[subsubInterval.first] > -1 ){
                     subsubIntervals_total.push_back(subsubInterval);
+
+                } else{
+                    continue;
                 }
             }
         }
