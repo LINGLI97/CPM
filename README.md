@@ -11,20 +11,24 @@ Before compiling and running, please install [sdsl](https://github.com/simongog/
 ```bash
 ./pre-install.sh
 ```
-Using int32_t:
+### Counting
+make command:
 ```
-make -f Makefile.32-bit.gcc
+make run_counting
 ```
-Using int64_t:
+Running:
+```
+ ./run_counting -f input.txt -p pattern.txt -x 1 -y 2
+```
+The `-f` option determines the input file path;   
+The `-p` option determines the pattern file path of P in the given P algorithm.
+The `-l` option determines the length of the context.
+The `-x` and `-y` option determine the length of context X and Y.
+### Baseline
 
 ```
-make -f Makefile.64-bit.gcc
 
-```
 
-### Usage
-
-```
  ./CPM -f input.txt -p pattern.txt -l 2 -m 3
 
 

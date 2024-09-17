@@ -66,9 +66,9 @@ clean_test:
 
 Counting_EXE=    run_counting
 
-Counting_SRC=    counting.cpp suffixTree.cpp stNode.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp kd_tree.cpp
+Counting_SRC=    counting.cpp suffixTree.cpp stNode.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp
 
-Counting_HD=     counting.h suffixTree.h stNode.h SA_LCP_LCE.h prefixTree.h prefixNode.h kd_tree.h Makefile
+Counting_HD=     counting.h suffixTree.h stNode.h SA_LCP_LCE.h prefixTree.h prefixNode.h Makefile
 
 
 Counting_OBJ=    $(Counting_SRC:.cpp=.o)
