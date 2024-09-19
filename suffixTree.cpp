@@ -273,8 +273,11 @@ stNode *suffixTree::forward_search(unsigned char *P, INT& pattern_size){
             break;
         }
         int i, j;
-        for ( i = d, j = 0; i < pattern_size && j < v->depth ; i++, j++ )
+        for ( i = d, j = d; i < pattern_size && j < v->depth ; i++, j++ )
         {
+//            cout<<"P["<<i<<"]"<<P[i]<<endl;
+//            cout<<"T["<<v->start+j<<"]"<<this->T[v->start+j]<<endl;
+
             if ( P[i] != this->T[v->start+j] )
             {
                 match = false;

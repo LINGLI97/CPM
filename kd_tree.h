@@ -9,34 +9,63 @@
 #include <vector>
 #include <cmath>
 #include <limits>
+#include <algorithm>
+#include <stack>
+using namespace std;
+
+
 struct Point {
-    std::vector<double> coords;
+    vector<double> coords;
+
+    Point(const vector<double>& c) : coords(c) {}
+
+    // 维度大小
+    int dimension() const {
+        return coords.size();
+    }
+
+    // 访问坐标值
+    double operator[](int idx) const {
+        return coords[idx];
+    }
 };
 
+// kd-tree 节点
 struct Node {
     Point point;
     Node* left;
     Node* right;
+    Node(const Point& pt) : point(pt), left(nullptr), right(nullptr) {}
     ~Node() {
-        delete left;
-        delete right;
+        delete left;  // Recursively delete left child
+        delete right; // Recursively delete right child
     }
 };
 
-class KD{
 
+
+
+
+
+class KDTree {
 public:
+    KDTree(vector<Point>& points);
 
-    KD(std::vector<Point> &points);
-    Node* newNode(Point point);
 
-    Node* insertNode(Node* root, Point point, unsigned depth);
+    vector<Point> rangeSearch(const vector<pair<double, double>>& ranges);
 
-    Point high;
-    Node* KDroot;
+    Node* root;
 
-    // Perform range search
-    void range_Search(Node* root, Point &low, Point &high, unsigned depth);
-    ~KD();
+    int dim; // dimension
+
+    // build kd-tree
+    Node* buildIterative(vector<Point>& points);
+
+
+    void rangeSearchIterative(Node* node, const vector<pair<double, double>>& ranges, vector<Point>& result);
+    ~KDTree();
 };
+
+
+
 #endif

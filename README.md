@@ -13,44 +13,57 @@ Before compiling and running, please install [sdsl](https://github.com/simongog/
 ```
 ### Counting
 make command:
-```
+```bash
 make run_counting
 ```
 Running:
-```
+```bash
  ./run_counting -f input.txt -p pattern.txt -x 1 -y 2
 ```
 The `-f` option determines the input file path;   
 The `-p` option determines the pattern file path of P in the given P algorithm.
 The `-l` option determines the length of the context.
 The `-x` and `-y` option determine the length of context X and Y.
+
+
+### Test counting code
+```bash
+make run_test_counting
+```
+Running:
+```bash
+ ./run_test_counting -L 5 -R 100 -r 1000000
+```
+The `-L` option determines the minimal length of randomly generated text string;  
+The `-R` option determines the maximal length of randomly generated text string.  
+The `-r` option determines the number of test rounds.  
+
+
 ### Baseline
 
-```
-
+```bash
 
  ./CPM -f input.txt -p pattern.txt -l 2 -m 3
-
-
+```
 The `-f` option determines the input file path;   
 The `-p` option determines the pattern file path of P in the given P algorithm.
 The `-l` option determines the length of the context.
 The `-m` option determines the length of pattern P in the mining algorithm.
- 
-```
+
+
 
 
 ### Test the correctness
 If you would like to compile the test.cpp to test the consistence between the results of the baseline and naive checker we implemented:
-```
+```bash
 make -f Makefile.32-bit.gcc run_test
 ```
 or:
-```
+```bash
 make -f Makefile.64-bit.gcc run_test
 ```
 Then:
-```
+```bash
 ./run_test -L 3 -R 2000 -r 100000
 
 ```

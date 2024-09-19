@@ -11,17 +11,16 @@
 #include <getopt.h>
 #include <assert.h>
 #include <sys/time.h>
-#include "cmdline.h"
-#include "baseline.h"
 #include <unordered_set>
-#include "counting.h"
+
 #include <iostream>
 #include <fstream>
+#include "baseline.h"
+#include "cmdline.h"
+#include "counting.h"
 #include "suffixTree.h"
-
-
 #include "prefixTree.h"
-//#include "kd_tree.h"
+#include "kd_tree.h"
 #include <vector>
 #include <algorithm>    // std::sort
 #ifdef _USE_64
@@ -43,72 +42,6 @@ using namespace sdsl;
 
 using namespace std;
 #include <chrono>
-
-
-
-
-
-
-
-
-Node* newNode(Point point) {
-    Node* node = new Node;
-    node->point = point;
-    node->left = node->right = nullptr;
-    return node;
-}
-double distance(Point a, Point b) {
-    double dist = 0;
-    for (size_t i = 0; i < a.coords.size(); ++i) {
-        dist += (a.coords[i] - b.coords[i]) * (a.coords[i] - b.coords[i]);
-    }
-    return std::sqrt(dist);
-}
-
-Node* insertNode(Node* root, Point point, unsigned depth) {
-    if (root == nullptr) {
-
-        return newNode(point);
-    }
-    unsigned k = point.coords.size();
-    unsigned cd = depth % k;
-    if (point.coords[cd] < (root->point.coords[cd])) {
-        root->left = insertNode(root->left, point, depth + 1);
-    } else {
-        root->right = insertNode(root->right, point, depth + 1);
-    }
-    return root;
-}
-
-
-void range_Search(Node* root, Point low, Point high, unsigned depth) {
-    if (root == nullptr) return;
-    unsigned k = low.coords.size();
-    unsigned cd = depth % k;
-    if (root->point.coords[cd] >= low.coords[cd]) {
-        range_Search(root->left, low, high, depth + 1);
-    }
-    bool inside = true;
-    for (size_t i = 0; i < k; i++) {
-        if (root->point.coords[i] < low.coords[i] || root->point.coords[i] > high.coords[i]) {
-            inside = false;
-            break;
-        }
-    }
-    if (inside) {
-        std::cout << "Point: [";
-        for (size_t i = 0; i < k - 1; ++i) {
-            std::cout << root->point.coords[i] << ", ";
-        }
-        std::cout << root->point.coords[k - 1] << "]\n";
-    }
-    if (root->point.coords[cd] <= high.coords[cd]) {
-        range_Search(root->right, low, high, depth + 1);
-    }
-}
-
-
-
 
 
 
@@ -184,9 +117,11 @@ void readfile(string &filename, string &patternPath, unsigned char * &text_strin
 
 
     is_text.close();
-    text_string[text_size] = '\0';
+//    text_string[0] = '$';                      // start with '$'
+//    text_string[text_size + 1] = '$';           // end with '$'
+    text_string[text_size] = '\0';          // null
 
-
+//    text_size = text_size + 2 ;
     is_text.close();
 
 
@@ -286,10 +221,22 @@ int main (int argc, char *argv[])
     std::vector<Point> pointsD2;
     std::vector<Point> pointsDl;
 
+    stNode * up = ST.forward_search(pattern, pattern_size);
+    stNode * current_ul = up;
 
+    if (!up){
+        fprintf(stderr, "The pattern does not exist!\n" );
+    }
+    if (up->heavy){
+        // find the u_l if u_p is heavy (D_l)
+        while (current_ul->parent->heavy){
+            current_ul = current_ul->parent;
+        }
+        current_ul = current_ul->parent;
+    }
 
     for (auto& lightNode: ST.lightNodes){
-
+        bool flag_Dl = false;
         vector <pair<INT, INT>> L; // the idx in \overline(SA), phi
 
         for (auto &leaf: lightNode->leaves){
@@ -301,40 +248,27 @@ int main (int argc, char *argv[])
         sort(L.begin(),L.end(), compareByFirstEle);
         std::vector<pair<INT,INT>> prefixesStarting;
         for (auto& id : L) {
-
+            //pair {starting, phi}
             prefixesStarting.push_back({DS_rev.SA[id.first],id.second});
         }
         if (!prefixesStarting.empty()){
             prefixTree PT (prefixesStarting,DS_rev);
             PT.updatePhi();
-
-            PT.addPoints(pointsD1,pointsD2, pointsDl,lightNode);
+            if (up->heavy){
+                flag_Dl = (lightNode == current_ul);
+            }
+            PT.addPoints(pointsD1,pointsD2, pointsDl,lightNode, flag_Dl);
 
         }
-
-
     }
 
-    stNode * up = ST.forward_search(pattern, pattern_size);
     if (up){
         if (up->heavy){
 
-//            Point low_D1 = { {(double) up->preorderId, 0, x, 0, pattern_size +y } };
-//            Point high_D1 = {{(double) up->child.rbegin()->second->preorderId, x, text_size,  pattern_size +y, text_size} };
-//            KD D1(pointsD1);
-//            D1.range_Search(D1.KDroot,low_D1,high_D1,0);
-//            cout<<"---------------------------------------"<<endl;
-//
-//            Point low_D2 = { {(double) up->preorderId, 0, x, 0, pattern_size +y } };
-//            Point high_D2 = {{(double) up->child.rbegin()->second->preorderId, x, text_size,  pattern_size +y, text_size} };
-//            KD D2(pointsD2);
-//            D2.range_Search(D2.KDroot,low_D2,high_D2,0);
-//            cout<<"---------------------------------------"<<endl;
-//            Point low_Dl = { {0, x, pattern_size + y} };
-//            Point high_Dl = { {x, text_size, text_size} };
-//            KD Dl(pointsDl);
-//            Dl.range_Search(Dl.KDroot,low_Dl,high_Dl,0);
-//            cout<<"---------------------------------------"<<endl;
+            //D_1
+            KDTree KD_D1(pointsD1);
+
+            // find the preorder ID of rightmost leaf
             INT rightpreorderId = up->preorderId;
             stNode * current_up = up;
 
@@ -343,46 +277,67 @@ int main (int argc, char *argv[])
                 rightpreorderId = rightchild->preorderId;
                 current_up = rightchild;
             }
-            Point low_D1 = { {(double) up->preorderId, 0, (double) x, 0, (double) pattern_size +y } };
-            Point high_D1 = {{(double) rightpreorderId, (double)x , (double)text_size, (double) pattern_size +y, (double) text_size} };
-            Node* D1root = nullptr;
 
-            for (const auto& point : pointsD1) {
-                D1root = insertNode(D1root, point, 0);
+
+
+            vector<pair<double, double>> ranges_D1 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
+                                                   {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
+
+            vector<Point> result_D1 = KD_D1.rangeSearch(ranges_D1);
+
+            for (const Point& pt : result_D1) {
+                for (double coord : pt.coords) {
+                    cout << coord << " ";
+                }
+                cout << endl;
             }
-
-            range_Search(D1root,low_D1,high_D1,0);
             cout<<"---------------------------------------"<<endl;
 
-            Point low_D2 = { {(double) up->preorderId, 0, (double) x, 0, (double) pattern_size +y } };
-            Point high_D2 = {{(double) rightpreorderId, (double)x , (double)text_size, (double) pattern_size +y, (double) text_size} };
-            Node* D2root = nullptr;
+            //D_2
+            KDTree KD_D2(pointsD2);
 
 
-            for (const auto& point : pointsD2) {
-                D2root = insertNode(D2root, point, 0);
+
+            vector<pair<double, double>> ranges_D2 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
+                                                      {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
+
+            vector<Point> result_D2 = KD_D2.rangeSearch(ranges_D2);
+
+
+            for (const Point& pt : result_D2) {
+                for (double coord : pt.coords) {
+                    cout << coord << " ";
+                }
+                cout << endl;
             }
-
-            range_Search(D2root,low_D2,high_D2,0);
-            cout<<"---------------------------------------"<<endl;
-            Point low_Dl = { {0, 0, (double) x, (double) pattern_size + y} };
-            Point high_Dl = { {(double) up->preorderId, (double) x, (double) text_size, (double) text_size} };
-            Node* Dlroot = nullptr;
-            for (const auto& point : pointsDl) {
-                Dlroot = insertNode(Dlroot, point, 0);
-            }
-
-            range_Search(Dlroot,low_Dl,high_Dl,0);
             cout<<"---------------------------------------"<<endl;
 
+            //D_l
 
-            delete D1root;
-            delete D2root;
-            delete Dlroot;
+            KDTree KD_Dl(pointsDl);
+
+            vector<pair<double, double>> ranges_Dl = {{0, (double) x}, {(double) x,(double) text_size}, { (double) pattern_size + y, (double) text_size}};
+
+            vector<Point> result_Dl = KD_Dl.rangeSearch(ranges_Dl);
+
+
+            for (const Point& pt : result_Dl) {
+                for (double coord : pt.coords) {
+                    cout << coord << " ";
+                }
+                cout << endl;
+            }
+            cout<<"---------------------------------------"<<endl;
+
 
 
 
         } else{
+
+
+            KDTree KD_D1(pointsD1);
+
+            // find the preorder ID of rightmost leaf
             INT rightpreorderId = up->preorderId;
             stNode * current_up = up;
 
@@ -392,31 +347,38 @@ int main (int argc, char *argv[])
                 current_up = rightchild;
             }
 
-            Point low_D1 = { {(double) up->preorderId, 0, (double) x, 0, (double) pattern_size +y } };
-            Point high_D1 = {{(double) rightpreorderId, (double)x , (double)text_size, (double) pattern_size +y, (double) text_size} };
-            Node* D1root = nullptr;
 
-            for (const auto& point : pointsD1) {
-                D1root = insertNode(D1root, point, 0);
+
+            vector<pair<double, double>> ranges_D1 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
+                                                      {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
+
+            vector<Point> result_D1 = KD_D1.rangeSearch(ranges_D1);
+
+            for (const Point& pt : result_D1) {
+                for (double coord : pt.coords) {
+                    cout << coord << " ";
+                }
+                cout << endl;
             }
-
-            range_Search(D1root,low_D1,high_D1,0);
             cout<<"---------------------------------------"<<endl;
 
-            Point low_D2 = { {(double) up->preorderId, 0, (double) x, 0, (double) pattern_size +y } };
-            Point high_D2 = {{(double) rightpreorderId , (double)x , (double)text_size, (double) pattern_size +y, (double) text_size} };
-            Node* D2root = nullptr;
+            //D_2
+            KDTree KD_D2(pointsD2);
 
 
-            for (const auto& point : pointsD2) {
-                D2root = insertNode(D2root, point, 0);
+
+            vector<pair<double, double>> ranges_D2 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
+                                                      {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
+
+            vector<Point> result_D2 = KD_D2.rangeSearch(ranges_D2);
+
+            for (const Point& pt : result_D2) {
+                for (double coord : pt.coords) {
+                    cout << coord << " ";
+                }
+                cout << endl;
             }
-
-            range_Search(D2root,low_D2,high_D2,0);
             cout<<"---------------------------------------"<<endl;
-
-            delete D1root;
-            delete D2root;
 
         }
 

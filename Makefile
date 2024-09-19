@@ -2,8 +2,7 @@ MF=     Makefile
 
 CC=     g++
 
-CFLAGS= -g -D_USE_64
-#-DVERBOSE
+CFLAGS= -g -D_USE_64 -DVERBOSE
 #-msse3 -fopenmp -O3 -fomit-frame-pointer -funroll-loops -DNDEBUG
 
 LFLAGS= -std=c++17 -I ./libsdsl/include/ -L ./libsdsl/lib/ -lsdsl -ldivsufsort -ldivsufsort64 -Wl,-rpath=$(PWD)/libsdsl/lib
@@ -64,11 +63,53 @@ clean_test:
 
 
 
+
+Test_Counting_EXE=    run_test_counting
+
+Test_Counting_SRC=    test_counting.cpp suffixTree.cpp stNode.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp kd_tree.cpp
+
+Test_Counting_HD=     cmdline.h counting.h suffixTree.h stNode.h SA_LCP_LCE.h prefixTree.h prefixNode.h kd_tree.h Makefile
+
+
+Test_Counting_OBJ=    $(Test_Counting_SRC:.cpp=.o)
+
+
+Test_Counting:    $(Test_Counting_EXE)
+
+$(Test_Counting_EXE): $(Test_Counting_OBJ)
+	$(CC) $(CFLAGS) -o $@ $(Test_Counting_OBJ) $(LFLAGS)
+
+$(Test_Counting_OBJ): $(MF) $(Test_Counting_HD)
+
+clean_Test_Counting:
+	rm -f $(Test_Counting_OBJ) $(Test_Counting_EXE) *~
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Counting_EXE=    run_counting
 
-Counting_SRC=    counting.cpp suffixTree.cpp stNode.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp
+Counting_SRC=    counting.cpp suffixTree.cpp stNode.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp kd_tree.cpp
 
-Counting_HD=     counting.h suffixTree.h stNode.h SA_LCP_LCE.h prefixTree.h prefixNode.h Makefile
+Counting_HD=     counting.h suffixTree.h stNode.h SA_LCP_LCE.h prefixTree.h prefixNode.h kd_tree.h Makefile
 
 
 Counting_OBJ=    $(Counting_SRC:.cpp=.o)

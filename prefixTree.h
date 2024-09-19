@@ -21,7 +21,7 @@ public:
 
     pfNode * root;
     void updatePhi();
-    void addPoints(std::vector<Point> &pointsD1,std::vector<Point> &pointsD2,std::vector<Point> &pointsDl,stNode* lightNode);
+    void addPoints(std::vector<Point> &pointsD1,std::vector<Point> &pointsD2,std::vector<Point> &pointsDl,stNode* lightNode, bool flag_Dl);
 
 
     void deleteTreeIteratively();

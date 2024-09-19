@@ -132,7 +132,7 @@ void prefixTree::deleteTreeIteratively() {
 
     }
 }
-void prefixTree::addPoints(std::vector<Point> &pointsD1,std::vector<Point> &pointsD2,std::vector<Point> &pointsDl,stNode* lightNode) {
+void prefixTree::addPoints(std::vector<Point> &pointsD1,std::vector<Point> &pointsD2,std::vector<Point> &pointsDl,stNode* lightNode, bool flag_Dl) {
 
     std::stack<pfNode *> stack;
     stack.push(root);
@@ -146,7 +146,9 @@ void prefixTree::addPoints(std::vector<Point> &pointsD1,std::vector<Point> &poin
         }
         if (top->parent){
             pointsD2.push_back({{(double)lightNode->preorderId, (double) top->parent->depth+1, (double) top->depth,(double) lightNode->depth + 1, (double) top->phi }});
-            pointsDl.push_back({{(double)lightNode->preorderId + 1 , (double) top->parent->depth+1, (double) top->depth ,(double) top->phi}});
+            if (flag_Dl){
+                pointsDl.push_back({{(double) top->parent->depth+1, (double) top->depth ,(double) top->phi}});
+            }
         }
 
         for (auto &it: top->child) {
