@@ -86,7 +86,7 @@ void reverse( unsigned char * &s )
 
 
 // Returns a new reversed string without modifying the original
-unsigned char* reverseReturn(unsigned char* &s) {
+unsigned char* reversePattern(unsigned char* &s) {
     INT length = strlen((char*) s);
     unsigned char* reversed_s = ( unsigned char * ) malloc (  ( length + 1 ) * sizeof ( unsigned char ) );
 
@@ -408,16 +408,34 @@ bool areMapsIdentical(const unordered_map<string, vector<INT>>& map1, const unor
     return true; // Maps are identical
 }
 
+unsigned char* reverseString(unsigned char* &s) {
+    INT length = strlen((char*) s);
+    unsigned char* reversed_s = ( unsigned char * ) malloc (  ( length + 1 ) * sizeof ( unsigned char ) );
+
+
+    for (INT i = 0; i < length - 1; i++) {
+        reversed_s[i] = s[length  - i -2];
+    }
+    reversed_s[length - 1] = '$'; // Don't forget to null-terminate the new string
+
+    reversed_s[length] = '\0'; // Don't forget to null-terminate the new string
+
+    return reversed_s; // Return the new dynamically allocated reversed string
+}
+
+
+
+
 int main (int argc, char *argv[])
 {
 
     /* get the specified parameters from parser */
 
     cmdline::parser parser;
-    parser.add<int>("lengthMax", 'R', "the maximal length of text string", false, 100);
-    parser.add<int>("lengthMin", 'L', "the minimal length of text string", false, 5);
+    parser.add<int>("lengthMax", 'R', "the maximal length of text string", false, 200);
+    parser.add<int>("lengthMin", 'L', "the minimal length of text string", false, 10);
 
-    parser.add<int>("round", 'r', "the number of test rounds", false, 1000000);
+    parser.add<int>("round", 'r', "the number of test rounds", false, 10000);
 
 
     parser.parse_check(argc, argv);
@@ -433,8 +451,8 @@ int main (int argc, char *argv[])
     INT NumRound = parser.get<int>("round");
     srand(time(NULL));  // Initialize the random seed
 
-
     for (INT r =0; r< NumRound; r++){
+
         cout<<r<<endl;
 
         // Generate a random length for text_string that is less than max_text_length
@@ -444,9 +462,11 @@ int main (int argc, char *argv[])
         unsigned char* text_string = (unsigned char*)malloc((text_size + 1) * sizeof(unsigned char));
 
         // Fill text_string with random characters
-        for (INT i = 0; i < text_size; i++) {
+        for (INT i = 0; i < text_size -1; i++) {
             text_string[i] = 'a' + (rand() % 26);  // Generate a random letter
         }
+        text_string[text_size-1] = '$';  // Add null terminator to mark the end of the string
+
         text_string[text_size] = '\0';  // Add null terminator to mark the end of the string
 
         // Generate a random length for pattern
@@ -455,7 +475,8 @@ int main (int argc, char *argv[])
             std::cerr << "Text size is too small to create a pattern." << std::endl;
             continue;
         }
-        INT pattern_size = rand() % (text_size - 2) +1 ;
+//        INT pattern_size = rand() %(text_size - 2) +1 ;
+        INT pattern_size = rand() %4 +1 ;
 
         // Allocate memory for pattern
         unsigned char* pattern = (unsigned char*)malloc((pattern_size + 1) * sizeof(unsigned char));
@@ -478,39 +499,69 @@ int main (int argc, char *argv[])
         INT x = (half_diff > 0) ? rand() % (half_diff + 1)+1 : 1;
         INT y = (half_diff > 0) ? rand() % (half_diff + 1) +1: 1;
 
+
+
+
 // Allocate memory for the new string with padding
-        INT new_text_size = text_size + 2;
-        unsigned char* new_text_string = (unsigned char*)malloc((new_text_size + 1) * sizeof(unsigned char));
+//        INT new_text_size = text_size + 1;
+//        unsigned char* new_text_string = (unsigned char*)malloc((new_text_size ) * sizeof(unsigned char));
 
 // Add 'x' number of '$' characters at the beginning
-        for (INT i = 0; i < 1; i++) {
-            new_text_string[i] = '$';
-        }
+//        for (INT i = 0; i < 1; i++) {
+//            new_text_string[i] = '$';
+//        }
 
 // Copy the original text_string into the new_text_string
-        memcpy(new_text_string + 1, text_string, text_size);
+//        memcpy(new_text_string , text_string, text_size);
 
 // Add 'y' number of '$' characters at the end
-        for (INT i = 0; i < 1; i++) {
-            new_text_string[1 + text_size + i] = '$';
-        }
-
-        new_text_string[new_text_size] = '\0';  // Null-terminate the new string
-
-// Free the old text_string as it's no longer needed
-        free(text_string);
+//        for (INT i = 0; i < 1; i++) {
+//            new_text_string[1 + text_size + i] = '$';
+//        }
+//
+//        new_text_string[new_text_size] = '\0';  // Null-terminate the new string
+//
+//// Free the old text_string as it's no longer needed
+//        free(text_string);
 
 // Update text_string to point to the new padded string and text_size to the new size
-        text_string = new_text_string;
-        text_size = new_text_size;
+//        text_string = new_text_string;
+//        text_size = new_text_size;
 
         /*reversed pattern*/
-        unsigned char* pattern_rev = reverseReturn(pattern);
+        unsigned char* pattern_rev = reversePattern(pattern);
 
 //        INT n = strlen ( ( char * ) text_string );
 
         /*reversed string*/
-        unsigned char* text_string_rev = reverseReturn(text_string);
+        unsigned char* text_string_rev = reverseString(text_string);
+
+
+        auto Construction_start = std::chrono::high_resolution_clock::now();
+
+
+
+
+
+
+// Suffix tree construction
+
+
+        suffixTree ST(text_string, text_size);
+
+
+        //heavy-light decomposition & preorder id
+
+        ST.initHLD();
+
+
+        std::vector<Point> pointsD1;
+        std::vector<Point> pointsD2;
+        std::unordered_map<int, KDTree*> preorderID2KDTree;
+
+
+
+
 
         /*Prepared SA, invSA, LCP, LCE, rmq for the original string*/
         SA_LCP_LCE DS_org(text_string, text_size);
@@ -521,26 +572,49 @@ int main (int argc, char *argv[])
 
         SA_LCP_LCE DS_rev(text_string_rev, text_size);
 
+        {
+            for (auto& lightNode: ST.lightNodes){
+                std::vector<Point> pointsDl;
 
-// Suffix tree construction
-        auto Construction_start = std::chrono::high_resolution_clock::now();
+                vector <pair<INT, INT>> L; // the idx in \overline(SA), phi
 
-        suffixTree ST(text_string, text_size);
+                for (auto &leaf: lightNode->leaves){
+                    if (leaf->start > 0){
+                        INT phi = DS_org.LCE(lightNode->heavyLeaf->start,leaf->start);
+                        L.push_back({DS_rev.invSA[text_size - leaf->start], phi});
+                    }
+                }
+                sort(L.begin(),L.end(), compareByFirstEle);
+                std::vector<pair<INT,INT>> prefixesStarting;
+                for (auto& id : L) {
+                    //pair {starting, phi}
+                    prefixesStarting.push_back({DS_rev.SA[id.first],id.second});
+                }
+                if (!prefixesStarting.empty()){
+                    prefixTree PT (prefixesStarting,DS_rev);
+                    PT.updatePhi();
+//                if (up->heavy){
+//                    flag_Dl = (lightNode == current_ul);
+//                }
+                    PT.addPoints(pointsD1,pointsD2, pointsDl,lightNode);
+                    KDTree* KD_Dl = new KDTree(pointsDl);
+                    preorderID2KDTree[lightNode->preorderId] = KD_Dl;
 
-        auto Construction_end = std::chrono::high_resolution_clock::now();
-        double time_ST = std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_start).count()*0.000001;
+                }
+            }
 
-        //heavy-light decomposition & preorder id
-
-        ST.initHLD();
+        }
 
 
-        std::vector<Point> pointsD1;
-        std::vector<Point> pointsD2;
-        std::vector<Point> pointsDl;
+        KDTree KD_D1(pointsD1);
+
+        KDTree KD_D2(pointsD2);
+
+        pointsD1.clear();
+        pointsD2.clear();
 
         stNode * up = ST.forward_search(pattern, pattern_size);
-        stNode * current_ul = up;
+
         if (up == NULL){
             cout<<"------------------------Up is Null------------------------"<<endl;
 
@@ -552,117 +626,92 @@ int main (int argc, char *argv[])
             std::cout << "y: " << y << std::endl;
         }
 
-        if (up->heavy){
-            // find the u_l if u_p is heavy (D_l)
-            while (current_ul->parent->heavy){
-                current_ul = current_ul->parent;
-            }
-            current_ul = current_ul->parent;
-        }
 
-        for (auto& lightNode: ST.lightNodes){
-            bool flag_Dl = false;
-            vector <pair<INT, INT>> L; // the idx in \overline(SA), phi
 
-            for (auto &leaf: lightNode->leaves){
-                if (leaf->start > 0){
-                    INT phi = DS_org.LCE(lightNode->heavyLeaf->start,leaf->start);
-                    L.push_back({DS_rev.invSA[text_size - leaf->start], phi});
-                }
-            }
-            sort(L.begin(),L.end(), compareByFirstEle);
-            std::vector<pair<INT,INT>> prefixesStarting;
-            for (auto& id : L) {
-                //pair {starting, phi}
-                prefixesStarting.push_back({DS_rev.SA[id.first],id.second});
-            }
-            if (!prefixesStarting.empty()){
-                prefixTree PT (prefixesStarting,DS_rev);
-                PT.updatePhi();
-                if (up->heavy){
-                    flag_Dl = (lightNode == current_ul);
-                }
-                PT.addPoints(pointsD1,pointsD2, pointsDl,lightNode, flag_Dl);
-
-            }
-        }
 
 
         INT counts=0;
         if (up){
             if (up->heavy){
 
+//                cout<<"heavy"<<endl;
                 //D_1
-                KDTree KD_D1(pointsD1);
 
                 // find the preorder ID of rightmost leaf
                 INT rightpreorderId = up->preorderId;
                 stNode * current_up = up;
 
                 while (!current_up->child.empty()){
-                    stNode * rightchild = current_up->child.rbegin()->second;
-                    rightpreorderId = rightchild->preorderId;
-                    current_up = rightchild;
+                    stNode * rightChild = current_up->child.rbegin()->second;
+                    rightpreorderId = rightChild->preorderId;
+                    current_up = rightChild;
                 }
-
 
 
                 vector<pair<double, double>> ranges_D1 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
                                                           {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
 
-                vector<Point> result_D1 = KD_D1.rangeSearch(ranges_D1);
-
-//                for (const Point& pt : result_D1) {
-//                    for (double coord : pt.coords) {
-//                        cout << coord << " ";
-//                    }
-//                    cout << endl;
-//                }
-//                cout<<"---------------------------------------"<<endl;
-
+                int result_D1 = KD_D1.rangeSearch(ranges_D1);
+#ifdef VERBOSE
+                for (const Point& pt : result_D1) {
+            for (double coord : pt.coords) {
+                cout << coord << " ";
+            }
+            cout << endl;
+        }
+        cout<<"---------------------------------------"<<endl;
+#endif
                 //D_2
-                KDTree KD_D2(pointsD2);
 
 
 
                 vector<pair<double, double>> ranges_D2 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
                                                           {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
 
-                vector<Point> result_D2 = KD_D2.rangeSearch(ranges_D2);
+                int result_D2 = KD_D2.rangeSearch(ranges_D2);
 
+#ifdef VERBOSE
+                for (const Point& pt : result_D2) {
+            for (double coord : pt.coords) {
+                cout << coord << " ";
+            }
+            cout << endl;
+        }
+        cout<<"---------------------------------------"<<endl;
 
-//                for (const Point& pt : result_D2) {
-//                    for (double coord : pt.coords) {
-//                        cout << coord << " ";
-//                    }
-//                    cout << endl;
-//                }
-//                cout<<"---------------------------------------"<<endl;
-
+#endif
                 //D_l
 
-                KDTree KD_Dl(pointsDl);
+
+                // find the u_l if u_p is heavy (D_l)
+                stNode * lowest_ul = up;
+                while (lowest_ul->parent->heavy){
+                    lowest_ul = lowest_ul->parent;
+                }
+                lowest_ul = lowest_ul->parent;
+
 
                 vector<pair<double, double>> ranges_Dl = {{0, (double) x}, {(double) x,(double) text_size}, { (double) pattern_size + y, (double) text_size}};
 
+                int result_Dl = preorderID2KDTree[lowest_ul->preorderId]->rangeSearch(ranges_Dl);
+#ifdef VERBOSE
 
-                vector<Point> result_Dl = KD_Dl.rangeSearch(ranges_Dl);
-
-//                for (const Point& pt : result_Dl) {
-//                    for (double coord : pt.coords) {
-//                        cout << coord << " ";
-//                    }
-//                    cout << endl;
-//                }
-//                cout<<"---------------------------------------"<<endl;
-
-                counts = result_D1.size()+ result_D2.size()+ result_Dl.size();
+                for (const Point& pt : result_Dl) {
+            for (double coord : pt.coords) {
+                cout << coord << " ";
+            }
+            cout << endl;
+        }
+        cout<<"---------------------------------------"<<endl;
 
 
+#endif
+                counts = result_D1 + result_D2 + result_Dl;
             } else{
 
 
-                KDTree KD_D1(pointsD1);
+
+//                cout<<"light"<<endl;
 
                 // find the preorder ID of rightmost leaf
                 INT rightpreorderId = up->preorderId;
@@ -679,34 +728,38 @@ int main (int argc, char *argv[])
                 vector<pair<double, double>> ranges_D1 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
                                                           {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
 
-                vector<Point> result_D1 = KD_D1.rangeSearch(ranges_D1);
-
-//                for (const Point& pt : result_D1) {
-//                    for (double coord : pt.coords) {
-//                        cout << coord << " ";
-//                    }
-//                    cout << endl;
-//                }
-//                cout<<"---------------------------------------"<<endl;
+                int result_D1 = KD_D1.rangeSearch(ranges_D1);
+#ifdef VERBOSE
+                for (const Point& pt : result_D1) {
+            for (double coord : pt.coords) {
+                cout << coord << " ";
+            }
+            cout << endl;
+        }
+        cout<<"---------------------------------------"<<endl;
+#endif
 
                 //D_2
-                KDTree KD_D2(pointsD2);
-
 
 
                 vector<pair<double, double>> ranges_D2 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
                                                           {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
 
-                vector<Point> result_D2 = KD_D2.rangeSearch(ranges_D2);
+                int result_D2 = KD_D2.rangeSearch(ranges_D2);
 
-//                for (const Point& pt : result_D2) {
-//                    for (double coord : pt.coords) {
-//                        cout << coord << " ";
-//                    }
-//                    cout << endl;
-//                }
-//                cout<<"---------------------------------------"<<endl;
-                counts = result_D1.size()+ result_D2.size();
+
+                counts = result_D1 + result_D2;
+
+#ifdef VERBOSE
+
+                for (const Point& pt : result_D2) {
+            for (double coord : pt.coords) {
+                cout << coord << " ";
+            }
+            cout << endl;
+        }
+        cout<<"---------------------------------------"<<endl;
+#endif
 
             }
 
@@ -750,7 +803,7 @@ int main (int argc, char *argv[])
 //            }
 //            cout << endl;
 //        }
-
+        cout<<"counts: "<<counts<<endl;
         if (resultsNaive.size() != counts){
 
 
@@ -762,6 +815,7 @@ int main (int argc, char *argv[])
             std::cout << "x: " << x << std::endl;
 
             std::cout << "y: " << y << std::endl;
+            std:cout<<"counting :"<<counts <<"; Naive checker: "<<resultsNaive.size()<<endl;
 //            cout<<"------------------------RMQ------------------------"<<endl;
 //
 //

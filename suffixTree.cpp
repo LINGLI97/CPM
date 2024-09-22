@@ -3,7 +3,7 @@
 #include <stack>
 #include <cstring>
 #include <unordered_set>
-
+#include <fstream>
 #include "suffixTree.h"
 
 using namespace std;
@@ -115,6 +115,29 @@ suffixTree::suffixTree(unsigned char* T, INT &text_size)
 //    }
 //
 //}
+
+
+
+void suffixTree::clearLeaves() {
+    if (root == nullptr) {
+        return;
+    }
+
+    std::stack<stNode*> nodeStack;
+    nodeStack.push(root);
+
+    while (!nodeStack.empty()) {
+        stNode* current = nodeStack.top();
+        nodeStack.pop();
+
+        std::unordered_set<stNode*> empty;
+        current->leaves.swap(empty);
+        current->heavyLeaf = nullptr;
+        for (auto child : current->child) {
+            nodeStack.push(child.second);
+        }
+    }
+}
 
 void suffixTree::ComputeSuffixLink( stNode * u )
 {
@@ -296,6 +319,86 @@ stNode *suffixTree::forward_search(unsigned char *P, INT& pattern_size){
     return nullptr;
 
 }
+
+
+
+void suffixTree::generateDot(stNode* node, std::ofstream& dotFile, bool suf) {
+    if (!node) return;
+
+    std::vector<stNode*> children = node->allChild();
+    if (children.empty()) {
+
+//            dotFile << "\"" << node << "\" [shape=ellipse, style=filled, fillcolor=green, label=\" Start: " << node->getStart() << "\"];\n";
+
+    }
+
+    if (!children.empty()){
+
+        int numChildren = children.size();
+
+        for (int i = 0; i < numChildren; ++i) {
+
+            dotFile << "\"" << node << "\" -> \"" << children[i] << "\" [label=\""
+                    << " label: " << children[i]->label
+                    << "\"];\n";
+
+            // 输出节点的颜色（如果是 heavy node，填充红色背景）
+            dotFile << "\"" << children[i] << "\" [label=\""
+                    << " Heavy: " << (children[i]->heavy ? "Yes" : "No")
+                    << " , start: " << children[i]->start
+                    << " , string depth: " << children[i]->depth << " \"";
+
+            // 如果是 heavy 节点，将节点标记为红色
+            if (!children[i]->heavy) {
+                dotFile << ", style=filled, fillcolor=green";
+            }
+
+            if (children[i]->heavy) {
+                dotFile << ", style=filled, fillcolor=red";
+            }
+            dotFile << "];\n";
+
+            generateDot(children[i], dotFile, suf);
+
+
+        }
+    }
+    if (suf){
+        if (node->slink!=NULL){
+            dotFile << "\"" << node << "\" -> \"" << node->slink << "\" [label=\"" << "" << "\",color=\"red\"];\n";
+        }
+
+    }
+
+
+
+}
+
+void suffixTree::exportSuffixTreeToDot(const std::string& filename,bool suf) {
+    std::ofstream dotFile(filename);
+    if (!dotFile.is_open()) {
+        std::cerr << "Unable to open file for writing: " << filename << std::endl;
+        return;
+    }
+
+    //DOT setting
+    dotFile << "digraph SuffixTree {\n";
+    dotFile << "node [shape=ellipse, style=filled, fillcolor=lightgrey];\n";
+    dotFile << "edge [color=black];\n";
+    dotFile << "graph [nodesep=0.5, ranksep=1, splines=polyline];\n";
+
+
+
+
+    generateDot(root, dotFile,suf);  //without leafCount and flag info
+//    generateCount(root, dotFile,suf);  //with leafCount and flag info
+
+
+    dotFile << "}\n";
+    dotFile.close();
+}
+
+
 suffixTree::~suffixTree() {
 
 //    delete this->root;

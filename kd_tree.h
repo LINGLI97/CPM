@@ -52,7 +52,7 @@ public:
     KDTree(vector<Point>& points);
 
 
-    vector<Point> rangeSearch(const vector<pair<double, double>>& ranges);
+    int rangeSearch(const vector<pair<double, double>>& ranges);
 
     Node* root;
 
@@ -62,7 +62,7 @@ public:
     Node* buildIterative(vector<Point>& points);
 
 
-    void rangeSearchIterative(Node* node, const vector<pair<double, double>>& ranges, vector<Point>& result);
+    void rangeSearchIterative(Node* node, const vector<pair<double, double>>& ranges, int &counter);
     ~KDTree();
 };
 

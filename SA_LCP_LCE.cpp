@@ -107,7 +107,7 @@ INT SA_LCP_LCE::LCE(INT L, INT R) {
 
 SA_LCP_LCE::~SA_LCP_LCE(){
 
-    free(this->T);
+//    free(this->T);
     free(this->SA);
     free(this->invSA);
     free(this->LCP);

@@ -9,7 +9,7 @@
 
 
 
-void KDTree::rangeSearchIterative(Node* node, const vector<pair<double, double>>& ranges, vector<Point>& result) {
+void KDTree::rangeSearchIterative(Node* node, const vector<pair<double, double>>& ranges, int &counter) {
     if (!node) return;
 
     struct StackSearchNode {
@@ -36,7 +36,7 @@ void KDTree::rangeSearchIterative(Node* node, const vector<pair<double, double>>
         }
 
         if (inside) {
-            result.push_back(curNode->point);
+           counter++;
         }
 
         if (curNode->left && curNode->point[axis] >= ranges[axis].first) {
@@ -97,15 +97,15 @@ Node* KDTree::buildIterative(vector<Point> &points) {
     return tmp;
 }
 
-vector<Point> KDTree::rangeSearch(const vector<pair<double, double>>& ranges) {
-    vector<Point> result;
+int KDTree::rangeSearch(const vector<pair<double, double>>& ranges) {
+    int counter =0;
     if (dim != ranges.size()) {
         cout << "The dimension of range search is not matched with the data points" << endl;
-        return result;
+        return counter;
     }
 
-    rangeSearchIterative(root, ranges, result);
-    return result;
+    rangeSearchIterative(root, ranges, counter);
+    return counter;
 }
 
 
@@ -174,39 +174,39 @@ vector<pair<double, double>> generateRandomRanges(int dim, double lowerBound, do
 
     return ranges;
 }
-
-int test() {
-    int numPoints = 10000000;
-    int dim = 5;
-    double lowerBound = -10.0;
-    double upperBound = 10.0;
-
-
-    vector<Point> points = generateRandomPoints(numPoints, dim, lowerBound, upperBound);
-
-    auto Construction_start = std::chrono::high_resolution_clock::now();
-
-    KDTree tree(points);
-    auto Construction_end = std::chrono::high_resolution_clock::now();
-    double time_ST = std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_start).count()*0.000001;
-
-
-    vector<pair<double, double>> ranges ={{-10,10},{-10,10}, {-10,10},{-10,10},{-10,10} };
-
-
-    Construction_start = std::chrono::high_resolution_clock::now();
-    vector<Point> result = tree.rangeSearch(ranges);
-    Construction_end = std::chrono::high_resolution_clock::now();
-    double time_ST2 = std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_start).count()*0.000001;
-
-    std::cout << "Construction time: " << time_ST << "\n";
 //
-    std::cout << "query time: " << time_ST2 << "\n";
-
-    double ratio = static_cast<double>(result.size()) / points.size();
-    cout << "The number of points found is: " << result.size() << endl;
-    cout << "The number of total points is: " << points.size() << endl;
-    cout << "Ratio is " << ratio << endl;
-
-    return 0;
-}
+//int test() {
+//    int numPoints = 10000000;
+//    int dim = 5;
+//    double lowerBound = -10.0;
+//    double upperBound = 10.0;
+//
+//
+//    vector<Point> points = generateRandomPoints(numPoints, dim, lowerBound, upperBound);
+//
+//    auto Construction_start = std::chrono::high_resolution_clock::now();
+//
+//    KDTree tree(points);
+//    auto Construction_end = std::chrono::high_resolution_clock::now();
+//    double time_ST = std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_start).count()*0.000001;
+//
+//
+//    vector<pair<double, double>> ranges ={{-10,10},{-10,10}, {-10,10},{-10,10},{-10,10} };
+//
+//
+//    Construction_start = std::chrono::high_resolution_clock::now();
+//    vector<Point> result = tree.rangeSearch(ranges);
+//    Construction_end = std::chrono::high_resolution_clock::now();
+//    double time_ST2 = std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_start).count()*0.000001;
+//
+//    std::cout << "Construction time: " << time_ST << "\n";
+////
+//    std::cout << "query time: " << time_ST2 << "\n";
+//
+//    double ratio = static_cast<double>(result.size()) / points.size();
+//    cout << "The number of points found is: " << result.size() << endl;
+//    cout << "The number of total points is: " << points.size() << endl;
+//    cout << "Ratio is " << ratio << endl;
+//
+//    return 0;
+//}

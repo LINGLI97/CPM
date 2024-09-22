@@ -8,17 +8,17 @@
 
 class suffixTree
 {
-private:
 
-    unsigned char* T;
+
 
 
 public:
+
     explicit suffixTree(unsigned char* T,INT &text_size);
     int n;
     stNode * root;
 
-
+    unsigned char* T;
 
     stNode * createNode(  stNode * u, int d );
     void createLeaf(int i, stNode * u, int d );
@@ -29,6 +29,10 @@ public:
     stNode * forward_search( unsigned char* P, INT& pattern_size);
 
     void initHLD();
+    void clearLeaves();
+    void generateDot(stNode* node, std::ofstream& dotFile, bool suf);
+    void exportSuffixTreeToDot(const std::string& filename,bool suf);
+
 //    void getAll_ul(unordered_map<stNode *, stNode *> &result);
 
 

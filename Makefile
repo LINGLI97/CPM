@@ -2,14 +2,23 @@ MF=     Makefile
 
 CC=     g++
 
-CFLAGS= -g -D_USE_64 -DVERBOSE
-#-msse3 -fopenmp -O3 -fomit-frame-pointer -funroll-loops -DNDEBUG
+CFLAGS=  -D_USE_64 -DNDEBUG -g
+#-msse3 -fopenmp -O3 -fomit-frame-pointer -funroll-loops
+#-pg
+#
+#-msse3 -fopenmp -O3 -fomit-frame-pointer -funroll-loops
+#-DVERBOSE
+#-DNDEBUG -g
+#-msse3 -fopenmp -O3 -fomit-frame-pointer -funroll-loops -DVERBOSE
+# -DVERBOSE
 
+#
+#-g
 LFLAGS= -std=c++17 -I ./libsdsl/include/ -L ./libsdsl/lib/ -lsdsl -ldivsufsort -ldivsufsort64 -Wl,-rpath=$(PWD)/libsdsl/lib
 
 EXE=    CPM
 
-SRC=    baseline_Sep02.cpp
+SRC=    baseline.cpp
 
 HD=     baseline.h cmdline.h Makefile
 
@@ -65,6 +74,8 @@ clean_test:
 
 
 Test_Counting_EXE=    run_test_counting
+
+#Test_Counting_SRC=    naiver.cpp suffixTree.cpp stNode.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp kd_tree.cpp
 
 Test_Counting_SRC=    test_counting.cpp suffixTree.cpp stNode.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp kd_tree.cpp
 
