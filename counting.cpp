@@ -60,7 +60,7 @@ unsigned char* reversePattern(unsigned char* &s) {
     for (INT i = 0; i < length; i++) {
         reversed_s[i] = s[length - 1 - i];
     }
-    reversed_s[length] = '\0'; // Don't forget to null-terminate the new string
+    reversed_s[length] = '\0'; 
 
     return reversed_s; // Return the new dynamically allocated reversed string
 }
@@ -72,9 +72,9 @@ unsigned char* reverseString(unsigned char* &s) {
     for (INT i = 0; i < length - 1; i++) {
         reversed_s[i] = s[length  - i -2];
     }
-    reversed_s[length - 1] = '$'; // Don't forget to null-terminate the new string
+    reversed_s[length - 1] = '$'; 
 
-    reversed_s[length] = '\0'; // Don't forget to null-terminate the new string
+    reversed_s[length] = '\0'; 
 
     return reversed_s; // Return the new dynamically allocated reversed string
 }
@@ -135,12 +135,12 @@ void readfile(string &filename, string &patternPath, unsigned char * &text_strin
 
 
     is_text.close();
-//    text_string[0] = '$';                      // start with '$'
+
     text_string[text_size] = '$';           // end with '$'
     text_string[text_size + 1] = '\0';          // null
 
     text_size = text_size +1;
-//    text_size = text_size + 2 ;
+
     is_text.close();
 
 
@@ -532,11 +532,11 @@ int main (int argc, char *argv[])
 
 #endif
 
-    // 释放 KDTree* 对象并清空 unordered_map
+   
     for (auto& pair : preorderID2KDTree) {
-        delete pair.second;  // 释放 KDTree 指针指向的内存
+        delete pair.second;  
     }
-//    preorderID2KDTree.clear();  // 清空 unordered_map
+
 
     free(text_string);
     free(text_string_rev);
