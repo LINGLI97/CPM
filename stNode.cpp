@@ -40,7 +40,7 @@ stNode::stNode(unsigned char terminate_label)
 
 }
 
-stNode::stNode( int i, int d, unsigned char l)
+stNode::stNode( INT i, INT d, unsigned char l)
 {
     this->start = i;
     this->depth = d;
@@ -59,7 +59,7 @@ stNode::stNode( int i, int d, unsigned char l)
 }
 
 
-void stNode::setDepth( int d){
+void stNode::setDepth( INT d){
 
     this->depth = d;
 }
@@ -108,7 +108,7 @@ void stNode::setParent( stNode * parentNode )
 }
 
 
-int stNode::numChild()
+INT stNode::numChild()
 {
     if (this->child.empty()){
         return 0;

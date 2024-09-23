@@ -18,25 +18,25 @@ typedef int32_t INT;
 class stNode
 {
 public:
-    int start;
-    int depth;
+    INT start;
+    INT depth;
     unsigned char label; // label is the label of edge which links its parent and itself
-    int preorderId;
+    INT preorderId;
 
     stNode * parent;
     stNode * slink;
 
     stNode();
     explicit stNode(unsigned char terminate_label);
-    stNode( int i, int d, unsigned char l );
+    stNode( INT i, INT d, unsigned char l );
 
-    void setDepth( int d);
+    void setDepth( INT d);
 
 
 //DFS
     bool heavy;
     bool visited;
-    int sizeSubtree;
+    INT sizeSubtree;
     stNode * heavyLeaf;
     unordered_set<stNode*> leaves;
 
@@ -56,7 +56,7 @@ public:
     void addChild( stNode * childNode,  unsigned char l );
 
     void setParent ( stNode * parentNode);
-    int numChild();
+    INT numChild();
 
     std::vector<stNode*> allChild();
 

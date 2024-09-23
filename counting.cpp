@@ -46,12 +46,7 @@ using namespace std;
 
 long long memory_usage() {
     struct mallinfo2 mi = mallinfo2();
-    return mi.uordblks;
-}
-
-long long memory_free() {
-    struct mallinfo2 mi = mallinfo2();
-    return mi.fordblks;
+    return mi.uordblks + mi.hblkhd;
 }
 
 
@@ -230,7 +225,7 @@ int main (int argc, char *argv[])
     std::vector<Point> pointsD1;
     std::vector<Point> pointsD2;
 
-    std::unordered_map<int, KDTree*> preorderID2KDTree;
+    std::unordered_map<INT, KDTree*> preorderID2KDTree;
 
 
     long long ST_start = memory_usage();
@@ -274,7 +269,7 @@ int main (int argc, char *argv[])
 
     cout<<"ST.lightNodes.size(): " <<ST.lightNodes.size()<<endl;
     cout<< "text_size: "<<text_size<<endl;
-    int cnt =0;
+    INT cnt =0;
     for (auto& lightNode: ST.lightNodes){
 //        cout<<cnt<<endl;
         cnt++;
@@ -385,7 +380,7 @@ int main (int argc, char *argv[])
         vector<pair<double, double>> ranges_D1 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
                                                {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
 
-        int result_D1 = KD_D1.rangeSearch(ranges_D1);
+        INT result_D1 = KD_D1.rangeSearch(ranges_D1);
 #ifdef VERBOSE
         for (const Point& pt : result_D1) {
             for (double coord : pt.coords) {
@@ -402,7 +397,7 @@ int main (int argc, char *argv[])
         vector<pair<double, double>> ranges_D2 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
                                                   {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
 
-        int result_D2 = KD_D2.rangeSearch(ranges_D2);
+        INT result_D2 = KD_D2.rangeSearch(ranges_D2);
 
 #ifdef VERBOSE
         for (const Point& pt : result_D2) {
@@ -427,7 +422,7 @@ int main (int argc, char *argv[])
 
         vector<pair<double, double>> ranges_Dl = {{0, (double) x}, {(double) x,(double) text_size}, { (double) pattern_size + y, (double) text_size}};
 
-        int result_Dl = preorderID2KDTree[lowest_ul->preorderId]->rangeSearch(ranges_Dl);
+        INT result_Dl = preorderID2KDTree[lowest_ul->preorderId]->rangeSearch(ranges_Dl);
 #ifdef VERBOSE
 
         for (const Point& pt : result_Dl) {
@@ -461,7 +456,7 @@ int main (int argc, char *argv[])
         vector<pair<double, double>> ranges_D1 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
                                                   {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
 
-        int result_D1 = KD_D1.rangeSearch(ranges_D1);
+        INT result_D1 = KD_D1.rangeSearch(ranges_D1);
 #ifdef VERBOSE
         for (const Point& pt : result_D1) {
             for (double coord : pt.coords) {
@@ -478,7 +473,7 @@ int main (int argc, char *argv[])
         vector<pair<double, double>> ranges_D2 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
                                                   {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
 
-        int result_D2 = KD_D2.rangeSearch(ranges_D2);
+        INT result_D2 = KD_D2.rangeSearch(ranges_D2);
 
 
         counts = result_D1 + result_D2;

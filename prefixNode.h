@@ -17,17 +17,17 @@ typedef int32_t INT;
 class pfNode
 {
 public:
-    int start;
-    int depth;
+    INT start;
+    INT depth;
     unsigned char label; // label is the label of edge which links its parent and itself
 
-    int phi;
+    INT phi;
     pfNode * parent;
 
     pfNode();
-    pfNode( int i, int d, unsigned char l );
+    pfNode( INT i, INT d, unsigned char l );
 
-    void setDepth( int d);
+    void setDepth( INT d);
 
     bool visited;
 
@@ -41,7 +41,7 @@ public:
     void addChild( pfNode * childNode,  unsigned char l );
 
     void setParent ( pfNode * parentNode);
-    int numChild();
+    INT numChild();
 
     std::vector<pfNode*> allChild();
 

@@ -35,25 +35,7 @@ using namespace std;
 #include <malloc.h>
 long long memory_usage() {
     struct mallinfo2 mi = mallinfo2();
-    return mi.uordblks;
-}
-int64_t display_mallinfo2(void)
-{
-    struct mallinfo2 mi;
-
-    mi = mallinfo2();
-
-//           printf("Total non-mmapped bytes (arena):       %zu\n", mi.arena);
-//           printf("# of free chunks (ordblks):            %zu\n", mi.ordblks);
-//           printf("# of free fastbin blocks (smblks):     %zu\n", mi.smblks);
-//           printf("# of mapped regions (hblks):           %zu\n", mi.hblks);
-//          printf("Bytes in mapped regions (hblkhd):      %zu\n", mi.hblkhd);
-//         printf("Max. total allocated space (usmblks):  %zu\n", mi.usmblks);
-//         printf("Free bytes held in fastbins (fsmblks): %zu\n", mi.fsmblks);
-//    printf("Total allocated space (uordblks):      %zu\n", mi.uordblks);
-    return (int64_t)(mi.uordblks);
-//          printf("Total free space (fordblks):           %zu\n", mi.fordblks);
-//          printf("Topmost releasable block (keepcost):   %zu\n", mi.keepcost);
+    return mi.uordblks + mi.hblkhd;
 }
 
 void printArray(const char* name, INT* array, INT size) {
@@ -415,7 +397,6 @@ int main (int argc, char *argv[])
     parser.parse_check(argc, argv);
 
 
-    auto check1=display_mallinfo2();
 
 
     std::string filename = parser.get<std::string>("filepath");
@@ -575,18 +556,19 @@ int main (int argc, char *argv[])
 
     /*Prepared SA, invSA, LCP for the normal string*/
 
-    long long start = memory_usage();
 
     INT * SA;
     INT * LCP;
     INT * invSA;
     SA = ( INT * ) malloc( ( n ) * sizeof( INT ) );
+
     if( ( SA == NULL) )
     {
         fprintf(stderr, " Error: Cannot allocate memory for SA.\n" );
         return ( 0 );
     }
     long long end = memory_usage();
+
 
 #ifdef _USE_64
     if( divsufsort64( text_string, SA,  n ) != 0 )
@@ -607,6 +589,8 @@ int main (int argc, char *argv[])
     /*Compute the inverse SA array */
     invSA = ( INT * ) malloc( ( n ) * sizeof( INT ) );
 
+
+
     if( ( invSA == NULL) )
     {
         fprintf(stderr, " Error: Cannot allocate memory for invSA.\n" );
@@ -618,12 +602,16 @@ int main (int argc, char *argv[])
         invSA [SA[i]] = i;
     }
 
+
+
     LCP = ( INT * ) malloc  ( ( n ) * sizeof( INT ) );
     if( ( LCP == NULL) )
     {
         fprintf(stderr, " Error: Cannot allocate memory for LCP.\n" );
         return ( 0 );
     }
+
+
 
     /* Compute the LCP array */
     LCParray( text_string, n, SA, invSA, LCP );
@@ -696,7 +684,6 @@ int main (int argc, char *argv[])
     printstring("SA_rev->string",SA_rev, n,text_string_rev);
 
 #endif
-    long long used_end2 = memory_usage();
 
 
     auto Query_start = std::chrono::high_resolution_clock::now();
@@ -812,9 +799,7 @@ int main (int argc, char *argv[])
     double Construction_time = std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_start).count()*0.000001;
 
 
-    auto check2=display_mallinfo2();
 
-    cout << "Index memory in baseline: " << check2-check1 << " B" << endl;
 
     cout<<"There are "<<subIntervalsRMQNonNeg.size()<<" distinct XPY."<<endl;
     cout<< "Time for construction of baseline: "<<Construction_time<<endl;

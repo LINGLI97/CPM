@@ -17,7 +17,7 @@ pfNode::pfNode()
 }
 
 
-pfNode::pfNode( int i, int d, unsigned char l)
+pfNode::pfNode( INT i, INT d, unsigned char l)
 {
     this->start = i;
     this->depth = d;
@@ -31,7 +31,7 @@ pfNode::pfNode( int i, int d, unsigned char l)
 }
 
 
-void pfNode::setDepth( int d){
+void pfNode::setDepth( INT d){
 
     this->depth = d;
 }
@@ -76,7 +76,7 @@ void pfNode::setParent(pfNode * parentNode )
 }
 
 
-int pfNode::numChild()
+INT pfNode::numChild()
 {
     if (this->child.empty()){
         return 0;

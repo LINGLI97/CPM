@@ -15,13 +15,13 @@ class suffixTree
 public:
 
     explicit suffixTree(unsigned char* T,INT &text_size);
-    int n;
+    INT n;
     stNode * root;
 
     unsigned char* T;
 
-    stNode * createNode(  stNode * u, int d );
-    void createLeaf(int i, stNode * u, int d );
+    stNode * createNode(  stNode * u, INT d );
+    void createLeaf(INT i, stNode * u, INT d );
     void ComputeSuffixLink( stNode * u );
 
 //    unordered_map<int,stNode*> pos2leaf;
@@ -30,8 +30,8 @@ public:
 
     void initHLD();
     void clearLeaves();
-    void generateDot(stNode* node, std::ofstream& dotFile, bool suf);
-    void exportSuffixTreeToDot(const std::string& filename,bool suf);
+//    void generateDot(stNode* node, std::ofstream& dotFile, bool suf);
+//    void exportSuffixTreeToDot(const std::string& filename,bool suf);
 
 //    void getAll_ul(unordered_map<stNode *, stNode *> &result);
 
