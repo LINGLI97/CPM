@@ -1,0 +1,1 @@
+/usr/bin/c++  -W -Wall -pedantic -Wno-long-long -Wextra -ftemplate-depth=1024 -std=c++11 -fopenmp -O3 -DNDEBUG -rdynamic CMakeFiles/queue1.dir/queue1.cpp.o -o queue1  ../../lib/libstxxl.a 

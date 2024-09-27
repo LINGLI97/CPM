@@ -1,0 +1,6 @@
+[STXXL-MSG] STXXL v1.4.99 (prerelease/Release) (git b9e44f0ecba7d7111fbb33f3330c3e53f2b75236) + gnu parallel(20230528)
+[STXXL-MSG] Disk '/var/tmp/stxxl' is allocated, space: 1000 MiB, I/O implementation: syscall delete_on_exit queue=0 devid=0
+[STXXL-MSG] Starting write random numbers
+[STXXL-MSG] Finished write random numbers after 1.51188 seconds. Processed 400.000 MiB @ 264.576 MiB/s
+[STXXL-MSG] Starting sorting random numbers
+[STXXL-MSG] Finished sorting random numbers after 13.687 seconds. Processed 400.000 MiB @ 29.225 MiB/s

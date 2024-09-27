@@ -1,0 +1,1 @@
+/usr/bin/c++  -W -Wall -pedantic -Wno-long-long -Wextra -ftemplate-depth=1024 -std=c++11 -fopenmp -O3 -DNDEBUG -rdynamic CMakeFiles/benchmark_naive_matrix.dir/benchmark_naive_matrix.cpp.o -o benchmark_naive_matrix  ../../lib/libstxxl.a 

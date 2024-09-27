@@ -1,0 +1,62 @@
+/snap/clion/296/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/snap/clion/296/bin/ninja/linux/x64/ninja -G Ninja -S /home/ling/OneDrive/PhD/CPM/CPMLing/stxxl -B /home/ling/OneDrive/PhD/CPM/CPMLing/stxxl/cmake-build-debug
+CMake Deprecation Warning at CMakeLists.txt:18 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+-- The C compiler identification is GNU 11.4.0
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found Git: /usr/bin/git (found version "2.34.1")
+-- Detected git refspec 1.4.1-387-gb9e44f0e sha b9e44f0ecba7d7111fbb33f3330c3e53f2b75236
+-- Performing Test CXX_HAS_FLAGS_WEXTRA
+-- Performing Test CXX_HAS_FLAGS_WEXTRA - Success
+-- Performing Test CXX_HAS_TEMPLATE_DEPTH
+-- Performing Test CXX_HAS_TEMPLATE_DEPTH - Success
+-- Performing Test CXX_HAS_STD_CXX11
+-- Performing Test CXX_HAS_STD_CXX11 - Success
+-- Performing Test STXXL_HAVE_CXX11_RANGE_FOR_LOOP
+-- Performing Test STXXL_HAVE_CXX11_RANGE_FOR_LOOP - Success
+-- Looking for C++ include pthread.h
+-- Looking for C++ include pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Checking for 64-bit off_t
+-- Checking for 64-bit off_t - present
+-- Checking for fseeko/ftello
+-- Checking for fseeko/ftello - present
+-- Performing Test STXXL_HAVE_O_DIRECT
+-- Performing Test STXXL_HAVE_O_DIRECT - Success
+-- Looking for mmap
+-- Looking for mmap - found
+-- Performing Test STXXL_HAVE_LINUXAIO_FILE
+-- Performing Test STXXL_HAVE_LINUXAIO_FILE - Success
+-- Performing Test STXXL_HAVE_SYNC_ADD_AND_FETCH
+-- Performing Test STXXL_HAVE_SYNC_ADD_AND_FETCH - Success
+-- Found OpenMP_C: -fopenmp (found version "4.5")
+-- Found OpenMP_CXX: -fopenmp (found version "4.5")
+-- Found OpenMP: TRUE (found version "4.5")
+-- OpenMP found, enabling built-in parallel algorithms.
+-- Looking for C++ include parallel/algorithm
+-- Looking for C++ include parallel/algorithm - found
+-- Using POSIX pthread library functions.
+-- Looking for mallinfo
+-- Looking for mallinfo - found
+-- Looking for mlock
+-- Looking for mlock - found
+-- Configuring done (2.7s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/ling/OneDrive/PhD/CPM/CPMLing/stxxl/cmake-build-debug
