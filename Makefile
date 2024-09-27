@@ -2,7 +2,7 @@ MF=     Makefile
 
 CC=     g++
 
-CFLAGS=  -D_USE_64 -DNDEBUG -g
+CFLAGS=  -D_USE_64 -fopenmp -fomit-frame-pointer -funroll-loops -O3 -msse3
 #-msse3 -fopenmp -O3 -fomit-frame-pointer -funroll-loops
 #-pg
 #
@@ -48,6 +48,49 @@ clean-all:
 	rm -f $(OBJ) $(EXE) *~
 	rm -r libsdsl
 	rm -r sdsl-lite
+
+
+
+
+
+
+
+
+STXXL_PATH= ./stxxl
+STXXL_INC= -I$(STXXL_PATH)/include
+STXXL_LIB= -L$(STXXL_PATH)/lib -lstxxl
+CFLAGS += $(STXXL_INC)
+LFLAGS += $(STXXL_LIB)
+
+External_EXE=    run_EM
+
+#External_SRC=    Test_EM.cpp utils.cpp
+External_SRC= MiningExternal.cpp utils.cpp
+
+External_HD=     MiningExternal.h cmdline.h Makefile
+
+
+External_OBJ = $(External_SRC:.cpp=.o)
+
+
+
+External:    $(External_EXE)
+
+$(External_EXE): $(External_OBJ)
+	$(CC) $(CFLAGS) -o $@ $(External_OBJ) $(LFLAGS)
+
+$(External_OBJ): $(MF) $(External_HD)
+
+clean_External:
+	rm -f $(External_OBJ) $(External_EXE) *~
+
+
+
+
+
+
+
+
 
 
 Test_EXE=    run_test

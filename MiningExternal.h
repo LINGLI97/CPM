@@ -1,0 +1,9 @@
+
+#ifndef CPM_MININGEXTERNAL_H
+#define CPM_MININGEXTERNAL_H
+
+
+
+
+
+#endif

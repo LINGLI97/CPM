@@ -60,7 +60,7 @@ unsigned char* reversePattern(unsigned char* &s) {
     for (INT i = 0; i < length; i++) {
         reversed_s[i] = s[length - 1 - i];
     }
-    reversed_s[length] = '\0'; 
+    reversed_s[length] = '\0'; // Don't forget to null-terminate the new string
 
     return reversed_s; // Return the new dynamically allocated reversed string
 }
@@ -72,9 +72,9 @@ unsigned char* reverseString(unsigned char* &s) {
     for (INT i = 0; i < length - 1; i++) {
         reversed_s[i] = s[length  - i -2];
     }
-    reversed_s[length - 1] = '$'; 
+    reversed_s[length - 1] = '$'; // Don't forget to null-terminate the new string
 
-    reversed_s[length] = '\0'; 
+    reversed_s[length] = '\0'; // Don't forget to null-terminate the new string
 
     return reversed_s; // Return the new dynamically allocated reversed string
 }
@@ -110,7 +110,8 @@ bool compareByFirstEle(pair<INT, INT>& p1, pair<INT, INT>& p2){
 }
 
 
-void readfile(string &filename, string &patternPath, unsigned char * &text_string, unsigned char * &pattern, INT& text_size, INT& pattern_size){
+void readfile(string &filename, string &patternPath, unsigned char * &text_string, std::vector<unsigned char *> &patterns,
+              std::vector<std::pair<INT, INT>> &contextSizes, INT& text_size, vector<INT> & patternSizes){
     std::ifstream is_text(filename, std::ios::binary);
     if (!is_text) {
         std::cerr << "Error opening input file: " << filename << std::endl;
@@ -135,12 +136,12 @@ void readfile(string &filename, string &patternPath, unsigned char * &text_strin
 
 
     is_text.close();
-
+//    text_string[0] = '$';                      // start with '$'
     text_string[text_size] = '$';           // end with '$'
     text_string[text_size + 1] = '\0';          // null
 
     text_size = text_size +1;
-
+//    text_size = text_size + 2 ;
     is_text.close();
 
 
@@ -150,20 +151,28 @@ void readfile(string &filename, string &patternPath, unsigned char * &text_strin
         std::cerr << "Error opening pattern file: " << patternPath << std::endl;
     }
 
-    is_pattern.seekg(0, std::ios::end);
-    pattern_size = is_pattern.tellg();
-    is_pattern.seekg(0, std::ios::beg);
 
-    pattern = ( unsigned char * ) malloc (  ( pattern_size + 1 ) * sizeof ( unsigned char ) );
+    std::string line;
+    while (std::getline(is_pattern, line)) {
+        std::istringstream iss(line);
+        std::string pattern_str;
+        INT x;
+        INT y;
 
-    c = 0;
-    for (INT i = 0; i < pattern_size; i++)
-    {
-        is_pattern.read(reinterpret_cast<char*>(&c), 1);
-        pattern[i] = (unsigned char) c;
+        if (!(iss >> pattern_str >> x >> y)) {
+            std::cerr << "Error reading line: " << line << std::endl;
+            continue;  // Skip the invalid line
+        }
+
+        // Allocate memory for the pattern and store it in the vector
+        unsigned char *pattern = (unsigned char *)malloc((pattern_str.size() + 1) * sizeof(unsigned char));
+        std::copy(pattern_str.begin(), pattern_str.end(), pattern);
+        pattern[pattern_str.size()] = '\0';  // null terminator
+        patternSizes.push_back(pattern_str.size());
+        patterns.push_back(pattern);
+        contextSizes.push_back({x, y});
     }
 
-    pattern[pattern_size] = '\0';
     is_pattern.close();
 }
 
@@ -178,8 +187,6 @@ int main (int argc, char *argv[])
     parser.add<string>("filepath", 'f', "the path to input file", false, "input.txt");
 
     parser.add<string>("pattern", 'p', "the path to pattern file", false, "pattern.txt");
-    parser.add<int>("X", 'x', "the length of context, |X| = x ", false, 1);
-    parser.add<int>("Y", 'y', "the length of context, |Y| = y ", false, 1);
     parser.add<int>("LengthofP", 'm', "the length of P, m = |P| ", false, 1);
 
 
@@ -191,27 +198,22 @@ int main (int argc, char *argv[])
     std::string filename = parser.get<std::string>("filepath");
     std::string patternPath = parser.get<std::string>("pattern");
 
-    INT x = parser.get<int>("X");
-
-    INT y = parser.get<int>("Y");
 
     /* readfile into text_string and pattern */
     unsigned char* text_string;
-    unsigned char * pattern;
+    std::vector<unsigned char *> patterns;
+    std::vector<std::pair<INT, INT>> contextSizes;
+
     INT text_size = 0;
-    INT pattern_size = 0;
 
+    vector<INT> patternSizes;
 
-    readfile(filename,patternPath,text_string, pattern, text_size, pattern_size);
-
+    readfile(filename,patternPath,text_string, patterns, contextSizes, text_size, patternSizes);
     /*reversed string*/
 
 
 
     unsigned char* text_string_rev = reverseString(text_string);
-
-    /*reversed pattern*/
-    unsigned char* pattern_rev = reversePattern(pattern);
 
 
     auto Construction_start = std::chrono::high_resolution_clock::now();
@@ -238,6 +240,7 @@ int main (int argc, char *argv[])
 //    ST.exportSuffixTreeToDot("count22", true);
 //    ST.exportSuffixTreeToDot("count2", false);
 //
+
 
 
     long long ST_end = memory_usage();
@@ -269,6 +272,7 @@ int main (int argc, char *argv[])
 
     cout<<"ST.lightNodes.size(): " <<ST.lightNodes.size()<<endl;
     cout<< "text_size: "<<text_size<<endl;
+
     INT cnt =0;
     for (auto& lightNode: ST.lightNodes){
 //        cout<<cnt<<endl;
@@ -341,48 +345,59 @@ int main (int argc, char *argv[])
 
 
 
-    auto query_start = std::chrono::high_resolution_clock::now();
 
     // find the node which represents u_p
-    stNode * up = ST.forward_search(pattern, pattern_size);
 
-    // exit if the u_p is NULL
-    if (!up){
-
-        std::cout << "Text string: " << text_string << std::endl;
-        std::cout << "Pattern: " << pattern << std::endl;
-        std::cout << "x: " << x << std::endl;
-
-        std::cout << "y: " << y << std::endl;
-
-        std::cerr << "The pattern does not exist in text string!" << std::endl;
-        exit(1);
-    }
+    /*reversed pattern*/
 
 
-    INT counts=0;
+    for (INT i =0; i<patterns.size(); i ++){
 
-    if (up->heavy){
+        INT x = contextSizes[i].first;
 
-        //D_1
+        INT y = contextSizes[i].second;
 
-        // find the preorder ID of rightmost leaf
-        INT rightpreorderId = up->preorderId;
-        stNode * current_up = up;
+        unsigned char* pattern_rev = reversePattern(patterns[i]);
 
-        while (!current_up->child.empty()){
-            stNode * rightChild = current_up->child.rbegin()->second;
-            rightpreorderId = rightChild->preorderId;
-            current_up = rightChild;
+        auto query_start = std::chrono::high_resolution_clock::now();
+
+        stNode * up = ST.forward_search(patterns[i], patternSizes[i]);
+        // exit if the u_p is NULL
+        if (!up){
+
+            std::cout << "Text string: " << text_string << std::endl;
+            std::cout << "Pattern: " << patterns[i]<< std::endl;
+            std::cout << "x: " << x << std::endl;
+
+            std::cout << "y: " << y << std::endl;
+
+            std::cerr << "The pattern does not exist in text string!" << std::endl;
+            exit(1);
         }
 
+        INT counts=0;
 
-        vector<pair<double, double>> ranges_D1 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
-                                               {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
+        if (up->heavy){
 
-        INT result_D1 = KD_D1.rangeSearch(ranges_D1);
+            //D_1
+
+            // find the preorder ID of rightmost leaf
+            INT rightpreorderId = up->preorderId;
+            stNode * current_up = up;
+
+            while (!current_up->child.empty()){
+                stNode * rightChild = current_up->child.rbegin()->second;
+                rightpreorderId = rightChild->preorderId;
+                current_up = rightChild;
+            }
+
+
+            vector<pair<double, double>> ranges_D1 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
+                                                      {0,(double) patternSizes[i] +y},{(double) patternSizes[i] +y, (double) text_size}};
+
+            INT result_D1 = KD_D1.rangeSearch(ranges_D1);
 #ifdef VERBOSE
-        for (const Point& pt : result_D1) {
+            for (const Point& pt : result_D1) {
             for (double coord : pt.coords) {
                 cout << coord << " ";
             }
@@ -390,17 +405,17 @@ int main (int argc, char *argv[])
         }
         cout<<"---------------------------------------"<<endl;
 #endif
-        //D_2
+            //D_2
 
 
 
-        vector<pair<double, double>> ranges_D2 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
-                                                  {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
+            vector<pair<double, double>> ranges_D2 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
+                                                      {0,(double) patternSizes[i] +y},{(double) patternSizes[i] +y, (double) text_size}};
 
-        INT result_D2 = KD_D2.rangeSearch(ranges_D2);
+            INT result_D2 = KD_D2.rangeSearch(ranges_D2);
 
 #ifdef VERBOSE
-        for (const Point& pt : result_D2) {
+            for (const Point& pt : result_D2) {
             for (double coord : pt.coords) {
                 cout << coord << " ";
             }
@@ -409,23 +424,23 @@ int main (int argc, char *argv[])
         cout<<"---------------------------------------"<<endl;
 
 #endif
-        //D_l
+            //D_l
 
 
-        // find the u_l if u_p is heavy (D_l)
-        stNode * lowest_ul = up;
-        while (lowest_ul->parent->heavy){
+            // find the u_l if u_p is heavy (D_l)
+            stNode * lowest_ul = up;
+            while (lowest_ul->parent->heavy){
+                lowest_ul = lowest_ul->parent;
+            }
             lowest_ul = lowest_ul->parent;
-        }
-        lowest_ul = lowest_ul->parent;
 
 
-        vector<pair<double, double>> ranges_Dl = {{0, (double) x}, {(double) x,(double) text_size}, { (double) pattern_size + y, (double) text_size}};
+            vector<pair<double, double>> ranges_Dl = {{0, (double) x}, {(double) x,(double) text_size}, { (double) patternSizes[i] + y, (double) text_size}};
 
-        INT result_Dl = preorderID2KDTree[lowest_ul->preorderId]->rangeSearch(ranges_Dl);
+            INT result_Dl = preorderID2KDTree[lowest_ul->preorderId]->rangeSearch(ranges_Dl);
 #ifdef VERBOSE
 
-        for (const Point& pt : result_Dl) {
+            for (const Point& pt : result_Dl) {
             for (double coord : pt.coords) {
                 cout << coord << " ";
             }
@@ -435,30 +450,30 @@ int main (int argc, char *argv[])
 
 
 #endif
-        counts = result_D1 + result_D2 + result_Dl;
+            counts = result_D1 + result_D2 + result_Dl;
 
-    } else{
-
-
-
-        // find the preorder ID of rightmost leaf
-        INT rightpreorderId = up->preorderId;
-        stNode * current_up = up;
-
-        while (!current_up->child.empty()){
-            stNode * rightchild = current_up->child.rbegin()->second;
-            rightpreorderId = rightchild->preorderId;
-            current_up = rightchild;
-        }
+        } else{
 
 
 
-        vector<pair<double, double>> ranges_D1 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
-                                                  {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
+            // find the preorder ID of rightmost leaf
+            INT rightpreorderId = up->preorderId;
+            stNode * current_up = up;
 
-        INT result_D1 = KD_D1.rangeSearch(ranges_D1);
+            while (!current_up->child.empty()){
+                stNode * rightchild = current_up->child.rbegin()->second;
+                rightpreorderId = rightchild->preorderId;
+                current_up = rightchild;
+            }
+
+
+
+            vector<pair<double, double>> ranges_D1 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
+                                                      {0,(double) patternSizes[i] +y},{(double) patternSizes[i] +y, (double) text_size}};
+
+            INT result_D1 = KD_D1.rangeSearch(ranges_D1);
 #ifdef VERBOSE
-        for (const Point& pt : result_D1) {
+            for (const Point& pt : result_D1) {
             for (double coord : pt.coords) {
                 cout << coord << " ";
             }
@@ -467,20 +482,20 @@ int main (int argc, char *argv[])
         cout<<"---------------------------------------"<<endl;
 #endif
 
-        //D_2
+            //D_2
 
 
-        vector<pair<double, double>> ranges_D2 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
-                                                  {0,(double) pattern_size +y},{(double) pattern_size +y, (double) text_size}};
+            vector<pair<double, double>> ranges_D2 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
+                                                      {0,(double) patternSizes[i] +y},{(double) patternSizes[i] +y, (double) text_size}};
 
-        INT result_D2 = KD_D2.rangeSearch(ranges_D2);
+            INT result_D2 = KD_D2.rangeSearch(ranges_D2);
 
 
-        counts = result_D1 + result_D2;
+            counts = result_D1 + result_D2;
 
 #ifdef VERBOSE
 
-        for (const Point& pt : result_D2) {
+            for (const Point& pt : result_D2) {
             for (double coord : pt.coords) {
                 cout << coord << " ";
             }
@@ -488,23 +503,34 @@ int main (int argc, char *argv[])
         }
         cout<<"---------------------------------------"<<endl;
 #endif
+        }
+
+
+        auto query_end = std::chrono::high_resolution_clock::now();
+        double query_time = std::chrono::duration_cast < std::chrono::microseconds > (query_end - query_start).count()*0.000001;
+
+
+
+
+        cout<<"There are "<<counts<< " distinct XPY that occur in T."<<endl;
+
+        cout<<"Time for query of counting: "<<query_time<<endl;
+
+        free(pattern_rev);
+
     }
 
 
-    auto query_end = std::chrono::high_resolution_clock::now();
-    double query_time = std::chrono::duration_cast < std::chrono::microseconds > (query_end - query_start).count()*0.000001;
+
+    cout<<"----------------------------------------------------"<<endl;
 
     double Construction_time = std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_start).count()*0.000001;
 
-    long long used_end = memory_usage();
+
     long long IndexSpace_end = memory_usage();
 
     long long memory_Index = IndexSpace_end - IndexSpace_start;
-    cout<<"There are "<<counts<< " distinct XPY that occur in T."<<endl;
     cout<<"Time for construction of counting: "<<Construction_time<<endl;
-
-    cout<<"Time for query of counting: "<<query_time<<endl;
-
     cout<<"Index memory of counting: "<< memory_Index / (1024.0 * 1024.0)<<"MB"<<endl;
 
 
@@ -532,15 +558,15 @@ int main (int argc, char *argv[])
 
 #endif
 
-   
+    // 释放 KDTree* 对象并清空 unordered_map
     for (auto& pair : preorderID2KDTree) {
-        delete pair.second;  
+        delete pair.second;  // 释放 KDTree 指针指向的内存
     }
-
 
     free(text_string);
     free(text_string_rev);
-    free(pattern);
-    free(pattern_rev);
+    for (auto &it: patterns){
+        free(it);
+    }
 
 }
