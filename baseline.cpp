@@ -1,4 +1,4 @@
-
+// mining code
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -456,29 +456,65 @@ int main (int argc, char *argv[])
 
     parser.add<int>("LengthofP", 'm', "the length of P, m = |P| ", false, 1);
     parser.add<int>("MiningThreshold", 't', "The frequency threshold ", false, 2);
-
+    parser.add<int>("X", 'x', "the length of context, |X| = x ", false, 1);
+    parser.add<int>("Y", 'y', "the length of context, |Y| = y ", false, 1);
 
     parser.parse_check(argc, argv);
 
 
+    INT x = parser.get<int>("X");
+    INT y = parser.get<int>("Y");
 
+    INT m = parser.get<int>("LengthofP");
 
     std::string filename = parser.get<std::string>("filepath");
     std::string patternPath = parser.get<std::string>("pattern");
 
 
 
-    /* open input file and write it into text_string */
-
-    unsigned char* text_string;
+//    /* open input file and write it into text_string */
+//
+//    unsigned char* text_string;
+//    std::vector<unsigned char *> patterns;
+//    std::vector<std::pair<INT, INT>> contextSizes;
+//
+//    INT text_size = 0;
+//
+//    vector<INT> patternSizes;
+//
+//    readfile(filename,patternPath,text_string, patterns, contextSizes, text_size, patternSizes);
+    vector<INT> patternSizes;
     std::vector<unsigned char *> patterns;
     std::vector<std::pair<INT, INT>> contextSizes;
 
-    INT text_size = 0;
 
-    vector<INT> patternSizes;
+    std::ifstream is_text(filename, std::ios::binary);
+    if (!is_text) {
+        std::cerr << "Error opening input file: " << filename << std::endl;
+        return -1;
+    }
+    is_text.seekg(0, std::ios::end);
+    INT text_size = is_text.tellg();
+    is_text.seekg(0, std::ios::beg);
 
-    readfile(filename,patternPath,text_string, patterns, contextSizes, text_size, patternSizes);
+
+
+    unsigned char* text_string = (unsigned char*) malloc((text_size + 1) * sizeof(unsigned char));
+
+    char c = 0;
+    for (INT i = 0; i < text_size; i++) {
+        is_text.read(reinterpret_cast<char*>(&c), 1);
+        text_string[i] = (unsigned char)c;
+    }
+
+    is_text.close();
+    text_string[text_size] = '\0';
+
+
+
+
+
+
 
     INT n = strlen ( ( char * ) text_string );
 
@@ -487,11 +523,6 @@ int main (int argc, char *argv[])
 
 
     long long used_start = memory_usage();
-
-
-
-
-
 
 
     auto Construction_start = std::chrono::high_resolution_clock::now();
@@ -672,199 +703,9 @@ int main (int argc, char *argv[])
 
     auto Construction_end = std::chrono::high_resolution_clock::now();
 
-//
-//
-    printArray("SA_rev", SA_rev, n);
-
-
-    printArray("invSA_rev", invSA_rev, n);
-
-
-    printArray("LCP_rev", LCP_rev, n);
-
-    printArray("SA", SA, n);
-
-
-    printArray("invSA", invSA, n);
-
-
-    printArray("LCP", LCP, n);
-
-    printstring("SA->string",SA, n,text_string);
-    printstring("SA_rev->string",SA_rev, n,text_string_rev);
-
-#ifdef VERBOSE
-    printArray("SA_rev", SA_rev, n);
-
-
-    printArray("invSA_rev", invSA_rev, n);
-
-
-    printArray("LCP_rev", LCP_rev, n);
-
-    printArray("SA", SA, n);
-
-
-    printArray("invSA", invSA, n);
-
-
-    printArray("LCP", LCP, n);
-
-    printstring("SA->string",SA, n,text_string);
-    printstring("SA_rev->string",SA_rev, n,text_string_rev);
-
-#endif
-
-
-    auto Query_start = std::chrono::high_resolution_clock::now();
-
-    for (INT i =0; i<patterns.size(); i ++) {
-
-        INT x = contextSizes[i].first;
-
-        INT y = contextSizes[i].second;
-
-        /*reversed pattern*/
-        unsigned char *pattern_rev = reverseReturn(patterns[i]);
-
-/*Given P and context length l, use RMQ function to partition the intervals*/
-        pair<INT, INT> interval_rev = pattern_matching(pattern_rev, text_string_rev, SA_rev, LCP_rev, rmq_rev, n,
-                                                       patternSizes[i]);
-
-        //    cout<<interval_rev.first<<" "<<interval_rev.second<<endl;
-        // RMQ to partition the intervals
-
-        if (interval_rev.first > interval_rev.second) {
-
-            fprintf(stderr,
-                    " Error: starting position is bigger than ending position! Please check whether your pattern exists or not!\n");
-            exit(EXIT_FAILURE);
-        }
-
-        std::vector<std::pair<INT, INT>> subIntervalsRMQ;
-        findSubIntervalsRMQ(interval_rev.first, interval_rev.second, patternSizes[i] + x, LCP_rev, rmq_rev,
-                            subIntervalsRMQ);
-
-
-
-        //    std::vector<std::pair<INT, INT>> subIntervalsScaning;
-        //    findSubIntervalsScaning(interval_rev.first, interval_rev.second, pattern_size + l , LCP_rev, subIntervalsScaning);
-
-
-
-
-        std::vector<std::pair<INT, INT>> IntervalsMapped;
-
-        //Mapping the suffix array intervals of the reversed string to the intervals of the normal string
-
-
-        for (pair<INT, INT> subInterval: subIntervalsRMQ) {
-            INT normalIntervalFirst, normalIntervalSecond;
-            INT indexFirst = n - patternSizes[i] - x - SA_rev[rmq_C(subInterval.first, subInterval.second)];
-            //            INT indexSecond = n - pattern_size - l  - SA_rev[rmq_C(subInterval.first,subInterval.second)];
-
-            if (indexFirst > -1) {
-                normalIntervalFirst = invSA[indexFirst];
-                normalIntervalSecond = normalIntervalFirst + subInterval.second - subInterval.first;
-            } else {
-                continue;
-
-            }
-
-
-            if (normalIntervalFirst < normalIntervalSecond) {
-                IntervalsMapped.push_back({normalIntervalFirst, normalIntervalSecond});
-            } else {
-                IntervalsMapped.push_back({normalIntervalSecond, normalIntervalFirst});
-            }
-
-
-        }
-
-
-        std::vector<std::pair<INT, INT>> subIntervalsRMQNonNeg;
-
-
-        // conducting partitioning on every mapped subInterval further by sharing the first m + 2 * l symbols
-        for (pair<INT, INT> subInterval: IntervalsMapped) {
-            //        if (subInterval.first > -1 and subInterval.second > -1){
-            std::vector<std::pair<INT, INT>> subIntervalsRMQNormal;
-            findSubIntervalsRMQ(subInterval.first, subInterval.second, patternSizes[i] + x + y, LCP, rmq,
-                                subIntervalsRMQNormal);
-
-            //        std::vector<std::pair<INT, INT>> subIntervalsScaningNormal;
-            //        findSubIntervalsScaning( subInterval.first, subInterval.second, pattern_size + 2 * l , LCP, subIntervalsScaningNormal);
-
-            for (pair<INT, INT> subsubInterval: subIntervalsRMQNormal) {
-                if (n - patternSizes[i] - x - y - SA[subsubInterval.first] > -1) {
-                    subIntervalsRMQNonNeg.push_back(subsubInterval);
-                } else {
-                    continue;
-                }
-            }
-
-        }
-        auto Query_end = std::chrono::high_resolution_clock::now();
-
-        //    long long used_end = memory_usage();
-        //    long long memory_used = used_end-used_start;
-        double Query_time =
-                std::chrono::duration_cast<std::chrono::microseconds>(Query_end - Query_start).count() * 0.000001;
-
-        cout<<"There are "<<subIntervalsRMQNonNeg.size()<<" distinct XPY."<<endl;
-
-        cout<< "Time for query of baseline: "<<Query_time<<endl;
-
-        free(pattern_rev);
-
-    }
     double Construction_time = std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_start).count()*0.000001;
 
 
-
-
-    cout<< "Time for construction of baseline: "<<Construction_time<<endl;
-
-    long long used_end = memory_usage();
-    long long memory_used = used_end-used_start;
-    cout << "Index memory in baseline: " << memory_used / (1024.0 * 1024.0) << " MB" << endl;
-
-    /*print out information*/
-
-
-
-
-#ifdef VERBOSE
-    cout<< "The experiment for given P = ";
-    for ( INT i = 0; i < pattern_size; i ++ ){
-        cout<<pattern[i];
-    }
-    cout<<" while the length of context x = "<<x<<"; y = "<<y<<": "<<endl;
-    // Print the generated intervals
-    for (const auto& interval : subIntervalsRMQNonNeg) {
-        std::cout << "SA Interval: [" << interval.first << ", " << interval.second << "]; ";
-        cout<<"occ: ";
-
-        for (INT i = interval.first;i < interval.second + 1; i++){
-            if (i == interval.second){
-                cout<<SA[i];
-
-            } else{
-                cout<<SA[i]<<", ";
-
-            }
-
-        }
-        cout<<": ";
-        for (INT i = 0;i < pattern_size + x + y ;i ++){
-            if (i == x or i == pattern_size + x){
-                cout<<" ";
-            }
-            cout<<text_string[SA[interval.first] + i];
-        }
-        cout<<std::endl;
-    }
-#endif
 
 
 
@@ -872,14 +713,11 @@ int main (int argc, char *argv[])
 /*The following is the mining algorithm*/
 //It outputs the distinct XPY, for every P of length m with at least one occurrence in the text
 
-    INT m = parser.get<int>("LengthofP");
+
 
     INT tau = parser.get<int>("MiningThreshold");
 
-
-
-
-
+    auto Mining_start = std::chrono::high_resolution_clock::now();
 
     // scan the LCP_rev from top to bottom
     std::vector<std::pair<INT, INT>> IntervalsPreprocessed;
@@ -945,37 +783,20 @@ int main (int argc, char *argv[])
         }
 
     }
+    long long used_end = memory_usage();
+    auto Mining_end = std::chrono::high_resolution_clock::now();
+
+    double Query_time =std::chrono::duration_cast<std::chrono::microseconds>(Mining_end - Mining_start).count() * 0.000001;
 
 
+    long long memory_used = used_end-used_start;
+    cout << "Index memory totally: " << memory_used / (1024.0 * 1024.0) << " MB" << endl;
+    cout<< "Time for construction of baseline: "<<Construction_time<<endl;
 
-//
-//    /*print out information*/
-//    cout<< "The experiment for mining every P of length m = "<<m<<" while the length of context x = "<<x<<"; y = "<<y<<": "<<endl;
-//    for (const auto& interval : subsubIntervals_total) {
-//        std::cout << "SA Interval: [" << interval.first << ", " << interval.second << "]; ";
-//        cout<<"occ: ";
-//
-//        for (INT i = interval.first;i < interval.second + 1; i++){
-//            if (i == interval.second){
-//                cout<<SA[i];
-//
-//            } else{
-//                cout<<SA[i]<<", ";
-//
-//            }
-//
-//        }
-//        cout<<": ";
-//        for (INT i = 0;i < m + x + y ;i ++){
-//            if (i == x or i == m + x){
-//                cout<<" ";
-//            }
-//            cout<<text_string[SA[interval.first] + i];
-//        }
-//        cout<<std::endl;
-//    }
-//
-//    }
+    cout<< "Mining time: "<<Query_time <<endl;
+    cout<< "Total time: "<<Construction_time + Query_time <<endl;
+
+    cout<<"subsubIntervals_total.size(): "<< subsubIntervals_total.size()<<endl;
 
     /*free the memory*/
 
