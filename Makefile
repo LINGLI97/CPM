@@ -142,6 +142,26 @@ clean_Test_Counting:
 
 
 
+Counting_Sampled_EXE=    run_counting_sampled
+
+Counting_Sampled_SRC=    count_sampled.cpp sparseSuffixTree.cpp sstNode.cpp kd_tree.cpp krfp.cpp utils2.cpp sparsePrefixTree.cpp sparsePrefixNode.cpp
+
+Counting_Sampled_HD=     sparseSuffixTree.h sstNode.h kd_tree.h krfp.h utils2.h sparsePrefixNode.h sparsePrefixTree.h Makefile
+
+
+Counting_Sampled_OBJ=    $(Counting_Sampled_SRC:.cpp=.o)
+
+
+Counting_Sampled:    $(Counting_Sampled_EXE)
+
+$(Counting_Sampled_EXE): $(Counting_Sampled_OBJ)
+	$(CC) $(CFLAGS) -o $@ $(Counting_Sampled_OBJ) $(LFLAGS)
+
+$(Counting_Sampled_OBJ): $(MF) $(Counting_Sampled_HD)
+
+clean_Counting_Sampled:
+	rm -f $(Counting_Sampled_OBJ) $(Counting_Sampled_EXE) *~
+
 
 
 

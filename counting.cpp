@@ -372,7 +372,8 @@ int main (int argc, char *argv[])
             std::cout << "y: " << y << std::endl;
 
             std::cerr << "The pattern does not exist in text string!" << std::endl;
-            exit(1);
+            free(pattern_rev);
+            break;
         }
 
         INT counts=0;
@@ -536,31 +537,10 @@ int main (int argc, char *argv[])
 
 
 
-#ifdef VERBOSE // print all of them
-    printArray("SA_rev", DS_rev.SA, text_size);
 
 
-    printArray("invSA_rev", DS_rev.invSA, text_size);
-
-
-    printArray("LCP_rev", DS_rev.LCP, text_size);
-
-    printArray("SA", DS_org.SA, text_size);
-
-
-    printArray("invSA", DS_org.invSA, text_size);
-
-
-    printArray("LCP", DS_org.LCP, text_size);
-
-    printstring("SA->string",DS_org.SA, text_size,text_string);
-    printstring("SA_rev->string",DS_rev.SA, text_size,text_string_rev);
-
-#endif
-
-    // 释放 KDTree* 对象并清空 unordered_map
     for (auto& pair : preorderID2KDTree) {
-        delete pair.second;  // 释放 KDTree 指针指向的内存
+        delete pair.second;
     }
 
     free(text_string);
