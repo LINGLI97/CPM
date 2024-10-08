@@ -28,7 +28,7 @@ CAT 1 3
 TA 1 2
 ...
 ```
-Every line represents a query: pattern x y.
+Every line represents a query: pattern x y.  
 The `-c` option determines sampling a suffix in every log(n) / c distance (When c is bigger, the number of suffixed sampled is more.)
 
 ### External Memory
