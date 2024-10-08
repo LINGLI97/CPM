@@ -11,6 +11,25 @@ Before compiling and running, please install [sdsl](https://github.com/simongog/
 ```bash
 ./pre-install.sh
 ```
+### Counting Sampling
+make command:
+```bash
+make run_counting_sampled
+```
+Then run:
+```bash
+./run_counting_sampled -f dna_1M.txt -p pattern.txt -c 2
+```
+The `-f` option determines the input file path;   
+The `-p` option determines the pattern file path of P in the given P algorithm.  
+In pattern.txt, there are multiple pattern queries in the form of:
+```CAT 1 3
+TA 1 2
+...
+```
+Every line represents a query: pattern x y.
+The `-c` option determines sampling a suffix in every log(n) / c distance (When c is bigger, the number of suffixed sampled is more.)
+
 ### External Memory
 
 Install  [psascan](https://www.cs.helsinki.fi/group/pads/LCPscan.html), [EM-SparsePhi-0.2.0](https://www.cs.helsinki.fi/group/pads/better_em_laca.html) and [stxxl](https://stxxl.org/tags/1.4.1/index.html).
