@@ -23,7 +23,8 @@ Then run:
 The `-f` option determines the input file path;   
 The `-p` option determines the pattern file path of P in the given P algorithm.  
 In pattern.txt, there are multiple pattern queries in the form of:
-```CAT 1 3
+```
+CAT 1 3
 TA 1 2
 ...
 ```
