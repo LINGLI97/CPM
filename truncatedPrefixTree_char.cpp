@@ -62,7 +62,7 @@ pfNode* truncatedPrefixTree::copyAndTruncate(pfNode* originalRoot, INT &B) {
     while (!stackNodes.empty()) {
         auto [oldNode, newNode] = stackNodes.top();
         stackNodes.pop();
-        // 遍历原始节点的所有子节点
+
         for ( auto& childPair : oldNode->child) {
             unsigned char charLabel = childPair.first;
 
@@ -75,7 +75,7 @@ pfNode* truncatedPrefixTree::copyAndTruncate(pfNode* originalRoot, INT &B) {
                 newChild->phi = child->phi;
                 newNode->addChild(newChild, charLabel);
 
-                // 将子节点压入栈中继续处理
+
                 stackNodes.push({child, newChild});
 
             } else{

@@ -297,19 +297,7 @@ int main(int argc, char *argv[]) {
     cout << "text size: " << text_size << "; compressed text size: " << new_string_size << endl;
     cout << "Compressed ratio: " << (double) (new_string_size) / text_size << endl;
 
-//    const char* fixed_string = TTTTC"b#cbc#acc#abc$";
-//    INT text_size_ = strlen(fixed_string);  // 获取指定字符串的长度
-//
-//    // 分配内存用于存储字符串
-//    unsigned char *new_string_ = (unsigned char *) malloc((text_size_ + 1) * sizeof(unsigned char));
-//    vector<INT> hash_positions_ = {1,5,9};
-//    std::vector<INT> reversed_positions; // Copy the original vector
-//    for (int pos : hash_positions_) {
-//        reversed_positions.push_back(text_size_ - 2 - pos); // Apply the transformation
-//    }
-//    std::reverse(reversed_positions.begin(), reversed_positions.end()); // Reverse the copy
-//    // 将固定字符串拷贝到分配的内存中
-//    strcpy((char*)new_string_, fixed_string);
+
 
     unsigned char *new_string_rev = reverseString(new_string);
 

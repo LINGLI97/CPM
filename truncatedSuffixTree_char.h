@@ -15,7 +15,6 @@ public:
 
     truncatedSuffixTree(suffixTree *& originalTree, INT &B, vector<INT> &hash_positions);
 
-//    stNode* copyAndTruncateB(stNode* originalRoot, INT &B, vector<INT> &hash_positions);
 
     stNode* copyAndTruncate(stNode* originalRoot, INT &B);
 

@@ -37,13 +37,13 @@ void truncatedSuffixTree::generateDot(stNode* node, std::ofstream& dotFile, bool
                     << " label: " << children[i]->label
                     << "\"];\n";
 
-            // 输出节点的颜色（如果是 heavy node，填充红色背景）
+
             dotFile << "\"" << children[i] << "\" [label=\""
                     << " Heavy: " << (children[i]->heavy ? "Yes" : "No")
                     << " , start: " << children[i]->start
                     << " , string depth: " << children[i]->depth << " \"";
 
-            // 如果是 heavy 节点，将节点标记为红色
+
             if (!children[i]->heavy) {
                 dotFile << ", style=filled, fillcolor=green";
             }
@@ -273,14 +273,15 @@ stNode* truncatedSuffixTree::copyAndTruncate(stNode* originalRoot, INT &B) {
 
     stNode* newRoot = new stNode(originalRoot->start, originalRoot->depth, originalRoot->label);
     newRoot->leaves_start_depth = originalRoot->leaves_start_depth;
-    // 栈元素包含原始节点、新的节点、从根到该节点的路径长度
+
+
+
     std::stack<pair<stNode*,stNode*>> stackNodes;
     stackNodes.push({originalRoot,newRoot});
 
     while (!stackNodes.empty()) {
         auto [oldNode, newNode] = stackNodes.top();
         stackNodes.pop();
-        // 遍历原始节点的所有子节点
         for ( auto& childPair : oldNode->child) {
             unsigned char charLabel = childPair.first;
 
@@ -291,10 +292,9 @@ stNode* truncatedSuffixTree::copyAndTruncate(stNode* originalRoot, INT &B) {
 
                 stNode* newChild = new stNode(child->start, child->depth, charLabel);
                 newChild->leaves_start_depth = child->leaves_start_depth;
-                // 将新节点添加到新树中
+                // add the new node to the new tree
                 newNode->addChild(newChild, charLabel);
 
-                // 将子节点压入栈中继续处理
                 stackNodes.push({child, newChild});
 
             } else{
@@ -321,51 +321,6 @@ stNode* truncatedSuffixTree::copyAndTruncate(stNode* originalRoot, INT &B) {
     return newRoot;
 }
 
-
-//stNode* truncatedSuffixTree::copyAndTruncateB(stNode* originalRoot, INT &B, vector<INT> &hash_positions) {
-//
-//    stNode* newRoot = new stNode(originalRoot->start, originalRoot->depth, originalRoot->label);
-//    // 栈元素包含原始节点、新的节点、从根到该节点的路径长度
-//    std::stack<pair<stNode*,stNode*>> stack;
-//    stack.push({originalRoot,newRoot});
-//
-//    while (!stack.empty()) {
-//        auto [oldNode, newNode] = stack.top();
-//        stack.pop();
-//        // 遍历原始节点的所有子节点
-//        for ( auto& childPair : oldNode->child) {
-//            unsigned char charLabel = childPair.first;
-//
-//            stNode* child = childPair.second;
-//
-//            if (charLabel == '#') {
-//                // 如果 '#' 是边的标签，不复制这个子树
-//                continue;
-//            }
-//            if (child->depth < B-1 ) {
-//
-//                stNode* newChild = new stNode(child->start, child->depth, charLabel);
-//
-//                // 将新节点添加到新树中
-//                newNode->addChild(newChild, charLabel);
-//
-//                // 将子节点压入栈中继续处理
-//                stack.push({child, newChild});
-//
-//            }
-////         depth >= B -1
-//            if (child->depth > B -2){
-//                INT depthValue = B - 1;
-//                stNode* newChild = new stNode(child->start, depthValue, charLabel);
-//                newNode->addChild(newChild, charLabel);
-//            }
-//
-//
-//        }
-//    }
-//
-//    return newRoot;
-//}
 
 
 INT truncatedSuffixTree::find_lower_bound_value(INT &value) {
