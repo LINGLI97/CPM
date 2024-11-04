@@ -11,7 +11,25 @@ Before compiling and running, please install [sdsl](https://github.com/simongog/
 ```bash
 ./pre-install.sh
 ```
+### LZ77 method
+
+make command:
+```bash
+make run_counting_stabbed_char
+```
+Then run:
+```bash
+./run_counting_stabbed_char -f dna_1M.txt -p pattern.txt
+```
+The `-f` option determines the input file path;   
+The `-p` option determines the pattern file path of P in the given P algorithm.  
+
+
+
+
+
 ### Counting Sampling
+
 make command:
 ```bash
 make run_counting_sampled
