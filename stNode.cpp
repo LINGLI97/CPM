@@ -17,12 +17,16 @@ stNode::stNode()
     this->visited = false;
     this->heavy = false;
     this->sizeSubtree = 0;
+    this-> preorderId = -1;
+#ifdef USE_KEPT_LENGTH
+    this->kept_length = -1;
+#endif
 
 }
 
 
 
-stNode::stNode(unsigned char terminate_label)
+stNode::stNode(unsigned char &terminate_label)
 {
     this->start = 0;
     this->depth = 0;
@@ -35,25 +39,31 @@ stNode::stNode(unsigned char terminate_label)
     this->heavy = false;
     this-> preorderId = -1;
     this->sizeSubtree = 0;
+#ifdef USE_KEPT_LENGTH
+    this->kept_length = -1;
+#endif
 
 
 
 }
 
-stNode::stNode( INT i, INT d, unsigned char l)
+stNode::stNode( INT& i, INT& d, unsigned char &l)
 {
     this->start = i;
     this->depth = d;
     this->label = l;
     this->parent = NULL;
     this->heavyLeaf =NULL;
-    this-> preorderId = -1;
     this->slink = NULL;
     this->visited = false;
     this->heavy = false;
+    this-> preorderId = -1;
 
     this->sizeSubtree = 0;
 
+#ifdef USE_KEPT_LENGTH
+    this->kept_length = -1;
+#endif
 
 
 }
@@ -86,7 +96,7 @@ void stNode::setSLink( stNode * slinkNode )
     this->slink = slinkNode;
 }
 
-void stNode::addChild( stNode * childNode, unsigned char l)
+void stNode::addChild( stNode * childNode, unsigned char &l)
 {
     auto it = this->child.find( l );
     if ( it == this->child.end() )

@@ -7,15 +7,15 @@
 
 #include <chrono>
 
+struct StackSearchNode {
+    Node* node;
+    INT depth;
+};
+
+void KDTree::rangeSearchIterative(Node* node, const vector<pair<INT, INT>>& ranges, INT &counter) {
+//    if (!node) return;
 
 
-void KDTree::rangeSearchIterative(Node* node, const vector<pair<double, double>>& ranges, int &counter) {
-    if (!node) return;
-
-    struct StackSearchNode {
-        Node* node;
-        int depth;
-    };
 
     stack<StackSearchNode> searchStack;
     searchStack.push({node, 0});
@@ -25,10 +25,10 @@ void KDTree::rangeSearchIterative(Node* node, const vector<pair<double, double>>
         searchStack.pop();
 
         Node* curNode = current.node;
-        int axis = current.depth % dim;
+        INT axis = current.depth % dim;
 
         bool inside = true;
-        for (int i = 0; i < dim; ++i) {
+        for (INT i = 0; i < dim; ++i) {
             if (curNode->point[i] < ranges[i].first || curNode->point[i] > ranges[i].second) {
                 inside = false;
                 break;
@@ -39,10 +39,10 @@ void KDTree::rangeSearchIterative(Node* node, const vector<pair<double, double>>
            counter++;
         }
 
-        if (curNode->left && curNode->point[axis] >= ranges[axis].first) {
+        if (curNode->point[axis] >= ranges[axis].first  && curNode->left) {
             searchStack.push({curNode->left, current.depth + 1});
         }
-        if (curNode->right && curNode->point[axis] <= ranges[axis].second) {
+        if (curNode->point[axis] <= ranges[axis].second && curNode->right) {
             searchStack.push({curNode->right, current.depth + 1});
         }
     }
@@ -50,26 +50,22 @@ void KDTree::rangeSearchIterative(Node* node, const vector<pair<double, double>>
 
 
 KDTree::KDTree(vector<Point> &points) {
-    if (!points.empty()) {
-        dim = points[0].dimension();
-        root = buildIterative(points);
-    } else {
-        root = nullptr;
-        dim = 0;
-    }
+    dim = points[0].dimension();
+    root = buildIterative(points);
+
 }
 
-
+struct StackNode {
+    Node** nodeRef;
+    vector<Point>::iterator start;
+    vector<Point>::iterator end;
+    INT depth;
+};
 
 Node* KDTree::buildIterative(vector<Point> &points) {
-    if (points.empty()) return nullptr;
+//    if (points.empty()) return nullptr;
 
-    struct StackNode {
-        Node** nodeRef;
-        vector<Point>::iterator start;
-        vector<Point>::iterator end;
-        int depth;
-    };
+
 
     stack<StackNode> s;
     Node* tmp = nullptr;
@@ -81,12 +77,10 @@ Node* KDTree::buildIterative(vector<Point> &points) {
 
         if (current.start >= current.end) continue;
 
-        int axis = current.depth % dim;
+        INT axis = current.depth % dim;
         auto mid = current.start + (current.end - current.start) / 2;
 
-        nth_element(current.start, mid, current.end, [axis](const Point& a, const Point& b) {
-            return a[axis] < b[axis];
-        });
+        nth_element(current.start, mid, current.end, [axis](const Point& a, const Point& b){return a[axis] < b[axis];});
 
         *current.nodeRef = new Node(*mid);
 
@@ -97,12 +91,12 @@ Node* KDTree::buildIterative(vector<Point> &points) {
     return tmp;
 }
 
-int KDTree::rangeSearch(const vector<pair<double, double>>& ranges) {
-    int counter =0;
-    if (dim != ranges.size()) {
-        cout << "The dimension of range search is not matched with the data points" << endl;
-        return counter;
-    }
+INT KDTree::rangeSearch(const vector<pair<INT, INT>>& ranges) {
+    INT counter =0;
+//    if (dim != ranges.size()) {
+//        cout << "The dimension of range search is not matched with the data points" << endl;
+//        return counter;
+//    }
 
     rangeSearchIterative(root, ranges, counter);
     return counter;
@@ -114,15 +108,15 @@ int KDTree::rangeSearch(const vector<pair<double, double>>& ranges) {
 KDTree::~KDTree(){
     delete root;
 }
-//int test() {
+//int main() {
 //
 //    std::vector<Point> points = {
-//            {{2.0, 3.0, 3}},
-//            {{5.0, 4.0, 4}},
-//            {{9.0, 6.0,5}},
-//            {{4.0, 7.0, 10}},
-//            {{8.0, 1.0, 30}},
-//            {{7.0, 2.0, 50}}
+//            {{2, 3, 3}},
+//            {{5, 4, 4}},
+//            {{9, 6,5}},
+//            {{4, 7, 10}},
+//            {{8, 1, 30}},
+//            {{7, 2, 50}}
 //    };
 //
 //
@@ -130,83 +124,86 @@ KDTree::~KDTree(){
 //    KDTree tree(points);
 //
 //
-//    vector<pair<double, double>> ranges = {{-2, 18}, {-1, 15}, {0, 50}};
+//    vector<pair<INT, INT>> ranges = {{3, 8}, {-1, 6}, {0, 10}};
 //
-//    vector<Point> result = tree.rangeSearch(ranges);
-//
+//    INT result = tree.rangeSearch(ranges);
+//    cout<<"# of the counting = "<<result<<endl;
 //
 //    return 0;
+//}
+
+
+//
+//
+//vector<Point> generateRandomPoints(INT numPoints, INT dim, INT lowerBound, INT upperBound) {
+//    vector<Point> points;
+//    random_device rd;
+//    mt19937 gen(rd());
+//    uniform_real_distribution<> dis(lowerBound, upperBound);
+//
+//    for (INT i = 0; i < numPoints; ++i) {
+//        vector<INT> coords;
+//        for (INT j = 0; j < dim; ++j) {
+//            coords.push_back(dis(gen));
+//        }
+//        points.emplace_back(coords);
+//    }
+//
+//    return points;
 //}
 //
 
 
 
-vector<Point> generateRandomPoints(int numPoints, int dim, double lowerBound, double upperBound) {
-    vector<Point> points;
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_real_distribution<> dis(lowerBound, upperBound);
-
-    for (int i = 0; i < numPoints; ++i) {
-        vector<double> coords;
-        for (int j = 0; j < dim; ++j) {
-            coords.push_back(dis(gen));
-        }
-        points.emplace_back(coords);
-    }
-
-    return points;
-}
-
-
-vector<pair<double, double>> generateRandomRanges(int dim, double lowerBound, double upperBound) {
-    vector<pair<double, double>> ranges;
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_real_distribution<> dis(lowerBound, upperBound);
-
-    for (int i = 0; i < dim; ++i) {
-        double min = dis(gen);
-        double max = dis(gen);
-        if (min > max) swap(min, max);
-        ranges.push_back({min, max});
-    }
-
-    return ranges;
-}
 //
-//int test() {
-//    int numPoints = 10000000;
+//
+//int main() {
+//    int numPoints = 1000000000;
 //    int dim = 5;
-//    double lowerBound = -10.0;
-//    double upperBound = 10.0;
-//
+//    INT lowerBound = -10;
+//    INT upperBound = 10;
 //
 //    vector<Point> points = generateRandomPoints(numPoints, dim, lowerBound, upperBound);
 //
 //    auto Construction_start = std::chrono::high_resolution_clock::now();
-//
 //    KDTree tree(points);
 //    auto Construction_end = std::chrono::high_resolution_clock::now();
-//    double time_ST = std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_start).count()*0.000001;
+//    double time_ST = std::chrono::duration_cast<std::chrono::microseconds>(Construction_end - Construction_start).count() * 0.000001;
+//    std::cout << "Construction time: " << time_ST << " seconds\n";
 //
+//    // 生成2000个随机查询范围
+//    std::random_device rd;
+//    std::mt19937 gen(rd());
+//    std::uniform_real_distribution<> range_dis(lowerBound, upperBound);
 //
-//    vector<pair<double, double>> ranges ={{-10,10},{-10,10}, {-10,10},{-10,10},{-10,10} };
+//    int totalResults = 0;
+//    int cnt = 200000;
+//    auto Query_start = std::chrono::high_resolution_clock::now();
 //
+//    for (int i = 0; i < cnt; ++i) {
+//        vector<pair<INT, INT>> ranges(dim);
+//        for (int j = 0; j < dim; ++j) {
+//            INT start = range_dis(gen);
+//            INT end = range_dis(gen);
+//            ranges[j] = { min(start, end), max(start, end) }; // 确保范围的顺序
+//        }
 //
-//    Construction_start = std::chrono::high_resolution_clock::now();
-//    vector<Point> result = tree.rangeSearch(ranges);
-//    Construction_end = std::chrono::high_resolution_clock::now();
-//    double time_ST2 = std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_start).count()*0.000001;
+//        // 执行范围查询
+//        int result = tree.rangeSearch(ranges);
+//        totalResults += result;
+//    }
 //
-//    std::cout << "Construction time: " << time_ST << "\n";
-////
-//    std::cout << "query time: " << time_ST2 << "\n";
+//    auto Query_end = std::chrono::high_resolution_clock::now();
+//    double queryTime = std::chrono::duration_cast<std::chrono::microseconds>(Query_end - Query_start).count() * 0.000001;
+//    std::cout << "Total query time for " << cnt<<" queries: " << queryTime << " seconds\n";
 //
-//    double ratio = static_cast<double>(result.size()) / points.size();
-//    cout << "The number of points found is: " << result.size() << endl;
-//    cout << "The number of total points is: " << points.size() << endl;
-//    cout << "Ratio is " << ratio << endl;
+//    // 计算平均结果和比例
+//    double averageResults = static_cast<double>(totalResults) / cnt;
+//    double ratio = averageResults / points.size();
+//
+//    std::cout << "Average number of points found per query: " << averageResults << std::endl;
+//    std::cout << "Total points: " << points.size() << std::endl;
+//    std::cout << "Average ratio per query: " << ratio << std::endl;
 //
 //    return 0;
 //}

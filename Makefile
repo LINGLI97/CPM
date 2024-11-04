@@ -2,7 +2,7 @@ MF=     Makefile
 
 CC=     g++
 
-CFLAGS=  -D_USE_64 -fopenmp -fomit-frame-pointer -funroll-loops -O3 -msse3
+CFLAGS=  -D_USE_64 -fopenmp -fomit-frame-pointer -funroll-loops -O3 -msse3 -DUSE_KEPT_LENGTH
 #-msse3 -fopenmp -O3 -fomit-frame-pointer -funroll-loops
 #-pg
 #
@@ -169,6 +169,25 @@ clean_Counting_Sampled:
 
 
 
+Counting_stabbed_char_EXE=    run_counting_stabbed_char
+
+Counting_stabbed_char_SRC=    count_stabbed_char.cpp LZ77_char.cpp suffixTree.cpp stNode.cpp truncatedPrefixTree_char.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp kd_tree.cpp truncatedSuffixTree_char.cpp
+
+Counting_stabbed_char_HD=     LZ77_char.h suffixTree.h stNode.h truncatedPrefixTree_char.h SA_LCP_LCE.h prefixTree.h prefixNode.h kd_tree.h truncatedSuffixTree_char.h Makefile
+
+
+Counting_stabbed_char_OBJ=    $(Counting_stabbed_char_SRC:.cpp=.o)
+
+
+Counting_stabbed_char:    $(Counting_stabbed_char_EXE)
+
+$(Counting_stabbed_char_EXE): $(Counting_stabbed_char_OBJ)
+	$(CC) $(CFLAGS) -o $@ $(Counting_stabbed_char_OBJ) $(LFLAGS)
+
+$(Counting_stabbed_char_OBJ): $(MF) $(Counting_stabbed_char_HD)
+
+clean_Counting_stabbed_char:
+	rm -f $(Counting_stabbed_char_OBJ) $(Counting_stabbed_char_EXE) *~
 
 
 

@@ -15,9 +15,8 @@ class prefixTree
 private:
     unsigned char* T;
 
-    std::vector<pair<INT,INT>> prefixesStarting;
 public:
-    explicit prefixTree(std::vector<pair<INT,INT>> prefixesStarting, SA_LCP_LCE & DS);
+    explicit prefixTree(std::vector<pair<INT,INT>> &prefixesStarting, SA_LCP_LCE & DS);
 
     pfNode * root;
     void updatePhi();

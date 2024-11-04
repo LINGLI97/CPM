@@ -1,11 +1,11 @@
+
+#ifndef CPM_SUFFIXTREE_H
+#define CPM_SUFFIXTREE_H
+
 #include <string>
 #include <map>
 
 #include "stNode.h"
-#ifndef CPM_SUFFIXTREE_H
-#define CPM_SUFFIXTREE_H
-
-
 class suffixTree
 {
 
@@ -14,7 +14,7 @@ class suffixTree
 
 public:
 
-    explicit suffixTree(unsigned char* T,INT &text_size);
+    suffixTree(unsigned char* T,const INT &text_size);
     INT n;
     stNode * root;
 
@@ -30,6 +30,7 @@ public:
 
     void initHLD();
     void clearLeaves();
+
 //    void generateDot(stNode* node, std::ofstream& dotFile, bool suf);
 //    void exportSuffixTreeToDot(const std::string& filename,bool suf);
 

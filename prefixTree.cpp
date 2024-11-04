@@ -10,12 +10,11 @@ using namespace std;
 
 
 
-prefixTree::prefixTree(std::vector<pair<INT,INT>> prefixesStarting, SA_LCP_LCE & DS)
+prefixTree::prefixTree(std::vector<pair<INT,INT>> &prefixesStarting, SA_LCP_LCE & DS)
 {
 
 
     this->T = DS.T;
-    this->prefixesStarting = prefixesStarting;
 
     this->root = new pfNode();
 
@@ -142,13 +141,13 @@ void prefixTree::addPoints(std::vector<Point> &pointsD1,std::vector<Point> &poin
         stack.pop();  // Pop before size calculation to avoid double counting
 
         if (lightNode->parent and top->parent){
-            pointsD1.push_back({{(double)lightNode->preorderId, (double) top->parent->depth+1, (double) top->depth, (double) lightNode->parent->depth +1 ,(double) lightNode->depth}});
+            pointsD1.push_back({{lightNode->preorderId,  top->parent->depth+1,  top->depth,  lightNode->parent->depth +1 , lightNode->depth}});
         }
         if (top->parent){
-            pointsD2.push_back({{(double)lightNode->preorderId, (double) top->parent->depth+1, (double) top->depth,(double) lightNode->depth + 1, (double) top->phi }});
+            pointsD2.push_back({{lightNode->preorderId,  top->parent->depth+1,  top->depth, lightNode->depth + 1,  top->phi }});
 
-//                pointsDl.push_back({{(double) top->parent->depth+1, (double) top->depth ,(double) top->phi}});
-            pointsDl.push_back({{(double) top->parent->depth+1, (double) top->depth ,(double) top->phi}});
+//                pointsDl.push_back({{ top->parent->depth+1,  top->depth , top->phi}});
+            pointsDl.push_back({{ top->parent->depth+1,  top->depth , top->phi}});
 
 
         }

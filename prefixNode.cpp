@@ -14,6 +14,10 @@ pfNode::pfNode()
     this->parent = NULL;
     this->phi = 0;
     this->visited= false;
+
+#ifdef USE_KEPT_LENGTH
+    this->kept_length = -1;
+#endif
 }
 
 
@@ -25,6 +29,11 @@ pfNode::pfNode( INT i, INT d, unsigned char l)
     this->parent = NULL;
     this->phi = 0;
     this->visited= false;
+
+
+#ifdef USE_KEPT_LENGTH
+    this->kept_length = -1;
+#endif
 
 
 

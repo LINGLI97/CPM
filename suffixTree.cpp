@@ -10,7 +10,7 @@ using namespace std;
 
 
 
-suffixTree::suffixTree(unsigned char* T, INT &text_size)
+suffixTree::suffixTree(unsigned char* T, const INT &text_size)
 {
 //    size_t memory_start = memory_usage()*0.001;
 
@@ -65,6 +65,8 @@ suffixTree::suffixTree(unsigned char* T, INT &text_size)
 //    memory = memory_usage()*0.001 - memory_start;
 
 }
+
+
 
 //void suffixTree::getAll_ul(unordered_map<stNode *, stNode *> &result) {
 //    std::stack<stNode*> stack;
@@ -130,8 +132,9 @@ void suffixTree::clearLeaves() {
         stNode* current = nodeStack.top();
         nodeStack.pop();
 
-        std::unordered_set<stNode*> empty;
-        current->leaves.swap(empty);
+        current->leaves_start_depth.clear();  // Clear all elements
+        current->leaves_start_depth.shrink_to_fit();
+
         current->heavyLeaf = nullptr;
         for (auto child : current->child) {
             nodeStack.push(child.second);
@@ -228,7 +231,8 @@ void suffixTree::initHLD() {
         } else{
             // Second visit to the node: The size of all child nodes has been calculated. Now calculate the size of the current node.
             if (top->child.empty()){
-                top->leaves.insert(top);  // top is leaf
+                top->leaves_start_depth.push_back({top->start,top->depth});  // top is leaf
+
             }
 
 
@@ -239,7 +243,9 @@ void suffixTree::initHLD() {
             INT maxSize = 0;
 
             for (auto &it : top->child) {
-                top->leaves.insert(it.second->leaves.begin(),it.second->leaves.end()); //merge leaf nodes for all nodes
+
+                top->leaves_start_depth.insert(top->leaves_start_depth.end(),it.second->leaves_start_depth.begin(),it.second->leaves_start_depth.end());  // top is leaf
+
 
                 totalSize += it.second->sizeSubtree;  // Sum up the sizes of the subtree from each child
                 if (it.second->sizeSubtree > maxSize) {

@@ -12,20 +12,26 @@
 #include <algorithm>
 #include <stack>
 using namespace std;
+#ifdef _USE_64
+typedef int64_t INT;
+#endif
 
+#ifdef _USE_32
+typedef int32_t INT;
+#endif
 
 struct Point {
-    vector<double> coords;
+    vector<INT> coords;
 
-    Point(const vector<double>& c) : coords(c) {}
+    Point(const vector<INT>& c) : coords(c) {}
 
-    // 维度大小
+
     int dimension() const {
         return coords.size();
     }
 
     // 访问坐标值
-    double operator[](int idx) const {
+    INT operator[](int idx) const {
         return coords[idx];
     }
 };
@@ -52,17 +58,17 @@ public:
     KDTree(vector<Point>& points);
 
 
-    int rangeSearch(const vector<pair<double, double>>& ranges);
+    INT rangeSearch(const vector<pair<INT, INT>>& ranges);
 
     Node* root;
 
-    int dim; // dimension
+    INT dim; // dimension
 
     // build kd-tree
     Node* buildIterative(vector<Point>& points);
 
 
-    void rangeSearchIterative(Node* node, const vector<pair<double, double>>& ranges, int &counter);
+    void rangeSearchIterative(Node* node, const vector<pair<INT, INT>>& ranges, INT &counter);
     ~KDTree();
 };
 

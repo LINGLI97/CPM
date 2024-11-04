@@ -31,6 +31,9 @@ public:
 
     bool visited;
 
+#ifdef USE_KEPT_LENGTH
+    INT kept_length;
+#endif
 
     unordered_map<unsigned char, pfNode*> child;
 
