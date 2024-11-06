@@ -10,11 +10,17 @@
 #include <variant>
 #include <cstring>
 
+
+#include <malloc.h>
+
+
+void printmemory_usage();
+
 class LZ77 {
 public:
     LZ77(unsigned char* text);
 
-    void compress(std::vector<std::pair<INT, std::variant<INT, unsigned char>>> &result, std::vector<INT> &phrase_start_locations);
+    void compress(std::vector<INT> &phrase_start_locations);
 
     std::pair<INT, INT> find_longest_match(INT start);
     unsigned char* T;

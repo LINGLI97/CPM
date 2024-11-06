@@ -4,7 +4,10 @@
 #include "LZ77_char.h"
 
 
-
+void printmemory_usage() {
+    struct mallinfo2 mi = mallinfo2();
+    cout<< (mi.uordblks + mi.hblkhd) /(1024.0 * 1024.0)<<endl;
+}
 
 LZ77::LZ77(unsigned char* text) {
     this->n = std::strlen((char*)text);
@@ -13,13 +16,15 @@ LZ77::LZ77(unsigned char* text) {
 
     this->T = text;
 //    std::cout << "Building suffix tree..." << std::endl;
+
     this->ST = new suffixTree(text, this->n);
-    this->ST->initHLD();
+//    this->ST->initHLD();
 
 }
 
 
-void LZ77::compress(std::vector<std::pair<INT, std::variant<INT, unsigned char>>> &result, std::vector<INT> &phrase_start_locations) {
+void LZ77::compress(std::vector<INT> &phrase_start_locations) {
+
 //    std::cout << "Performing LZ77 factorization..." << std::endl;
     size_t i = 0;
 
@@ -27,14 +32,15 @@ void LZ77::compress(std::vector<std::pair<INT, std::variant<INT, unsigned char>>
         auto [match_length, match_distance] = find_longest_match(i);
         phrase_start_locations.push_back(i);
 
-        if (match_length == 0) {
-            result.push_back(std::make_pair(-1, T[i]));  // T[i] 是 unsigned char 类型
-        } else {
-            result.push_back(std::make_pair(match_distance, match_length));  // match_length 是 int 类型
-        }
+//        if (match_length == 0) {
+//            result.push_back(std::make_pair(-1, T[i]));  // T[i] 是 unsigned char 类型
+//        } else {
+//            result.push_back(std::make_pair(match_distance, match_length));  // match_length 是 int 类型
+//        }
 
         i += (match_length == 0) ? 1 : match_length;
     }
+
 }
 
 std::pair<INT, INT> LZ77::find_longest_match(INT start) {

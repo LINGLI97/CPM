@@ -187,8 +187,6 @@ int main (int argc, char *argv[])
     parser.add<string>("filepath", 'f', "the path to input file", false, "input.txt");
 
     parser.add<string>("pattern", 'p', "the path to pattern file", false, "pattern.txt");
-    parser.add<int>("LengthofP", 'm', "the length of P, m = |P| ", false, 1);
-
 
     parser.parse_check(argc, argv);
 
@@ -217,10 +215,6 @@ int main (int argc, char *argv[])
 
 
     auto Construction_start = std::chrono::high_resolution_clock::now();
-
-
-
-
     long long IndexSpace_start = memory_usage();
 
     //---------------Index---------------//
@@ -230,30 +224,14 @@ int main (int argc, char *argv[])
     std::unordered_map<INT, KDTree*> preorderID2KDTree;
 
 
-    long long ST_start = memory_usage();
-
-
     // Suffix tree construction for original string
     //heavy-light decomposition & calculate preorder id
     suffixTree ST(text_string, text_size);
     ST.initHLD();
 //    ST.exportSuffixTreeToDot("count22", true);
 //    ST.exportSuffixTreeToDot("count2", false);
-//
 
 
-
-    long long ST_end = memory_usage();
-
-    long long memory_ST = ST_end-ST_start;
-
-
-    cout<<"ST: "<<memory_ST*0.001*0.001<<endl;
-
-//------------------------------------------
-
-
-    long long memory_KD_l =0;
 
     {
 
@@ -269,10 +247,6 @@ int main (int argc, char *argv[])
 
 
 
-
-    cout<<"ST.lightNodes.size(): " <<ST.lightNodes.size()<<endl;
-    cout<< "text_size: "<<text_size<<endl;
-
     INT cnt =0;
     for (auto& lightNode: ST.lightNodes){
 //        cout<<cnt<<endl;
@@ -280,16 +254,18 @@ int main (int argc, char *argv[])
         std::vector<Point> pointsDl;
         vector <pair<INT, INT>> L; // the idx in \overline(SA), phi
 
-        for (auto &leaf: lightNode->leaves){
+        for (auto &leaf: lightNode->leaves_start_depth) {
+
 //            if (leaf->start > 0){
-            INT phi = DS_org.LCE(lightNode->heavyLeaf->start,leaf->start);
-            L.push_back({DS_rev.invSA[text_size - leaf->start-1], phi});
+            INT phi = DS_org.LCE(lightNode->heavyLeaf->start,leaf.first);
+            //L :{index, phi}
+            L.push_back({DS_rev.invSA[text_size - leaf.first-1], phi});
 //            }
         }
         sort(L.begin(),L.end(), compareByFirstEle);
         std::vector<pair<INT,INT>> prefixesStarting;
         for (auto& id : L) {
-            //pair {starting, phi}
+            //pair {starting positions, phi}
             prefixesStarting.push_back({DS_rev.SA[id.first],id.second});
         }
         if (!prefixesStarting.empty()){
@@ -308,20 +284,21 @@ int main (int argc, char *argv[])
 
 
     }
-    long long KD_start = memory_usage();
 
 
     KDTree KD_D1(pointsD1);
-//    cout<<pointsD1.size()<<endl;
-//    cout<<"KD1"<<endl;
+
     KDTree KD_D2(pointsD2);
-//    cout<<pointsD2.size()<<endl;
 
-//    cout<<"KD2"<<endl;
+    cout<<"pointsD1.size(): "<<pointsD1.size()<<endl;
 
-    long long KD_end = memory_usage();
+    cout<<"pointsD2.size(): "<<pointsD2.size()<<endl;
+    cout<<"preorderID2KDTree.size(): "<<preorderID2KDTree.size()<<endl;
 
-    long long memory_KD = KD_end- KD_start;
+    auto Construction_end = std::chrono::high_resolution_clock::now();
+
+
+    double Construction_time = std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_start).count()*0.000001;
 
 
 
@@ -340,7 +317,16 @@ int main (int argc, char *argv[])
 
 
 
-    auto Construction_end = std::chrono::high_resolution_clock::now();
+
+
+    long long IndexSpace_end = memory_usage();
+
+    long long memory_Index = IndexSpace_end - IndexSpace_start;
+    cout<<"====================================== counting index construction=============================="<<endl;
+
+    cout<<"Index memory of counting: "<< memory_Index / (1024.0 * 1024.0)<<"MB"<<endl;
+    cout<<"Index construction time: "<< Construction_time<< " seconds"<<endl;
+
 
 
 
@@ -350,6 +336,7 @@ int main (int argc, char *argv[])
 
     /*reversed pattern*/
 
+    cout<<"====================Starting multiple queries saved in "<<patternPath<<"========================"<<endl;
 
     for (INT i =0; i<patterns.size(); i ++){
 
@@ -365,15 +352,18 @@ int main (int argc, char *argv[])
         // exit if the u_p is NULL
         if (!up){
 
-            std::cout << "Text string: " << text_string << std::endl;
-            std::cout << "Pattern: " << patterns[i]<< std::endl;
+//            std::cout << "Text string: " << text_string << std::endl;
+            std::cout << "Pattern " <<i<<": " << patterns[i]<< std::endl;
+
             std::cout << "x: " << x << std::endl;
 
             std::cout << "y: " << y << std::endl;
 
             std::cerr << "The pattern does not exist in text string!" << std::endl;
+            cout<<"---------------------------------------"<<endl;
+
             free(pattern_rev);
-            break;
+            continue;
         }
 
         INT counts=0;
@@ -393,35 +383,36 @@ int main (int argc, char *argv[])
             }
 
 
-            vector<pair<double, double>> ranges_D1 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
-                                                      {0,(double) patternSizes[i] +y},{(double) patternSizes[i] +y, (double) text_size}};
+            vector<pair<INT, INT>> ranges_D1 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, text_size},
+                                                      {0, patternSizes[i] +y},{ patternSizes[i] +y,  text_size}};
+
+
+//            for (const auto& range : ranges_D1) {
+//                cout << "{" << range.first << ", " << range.second << "}" << endl;
+//            }
+
+
 
             INT result_D1 = KD_D1.rangeSearch(ranges_D1);
 #ifdef VERBOSE
-            for (const Point& pt : result_D1) {
-            for (double coord : pt.coords) {
-                cout << coord << " ";
-            }
-            cout << endl;
-        }
+        cout<<"result_D1 = "<<result_D1<<endl;
         cout<<"---------------------------------------"<<endl;
 #endif
             //D_2
 
 
 
-            vector<pair<double, double>> ranges_D2 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
-                                                      {0,(double) patternSizes[i] +y},{(double) patternSizes[i] +y, (double) text_size}};
+            vector<pair<INT, INT>> ranges_D2 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, text_size},
+                                                      {0, patternSizes[i] +y},{ patternSizes[i] +y,  text_size}};
 
+//            for (const auto& range : ranges_D2) {
+//                cout << "{" << range.first << ", " << range.second << "}" << endl;
+//            }
             INT result_D2 = KD_D2.rangeSearch(ranges_D2);
 
 #ifdef VERBOSE
-            for (const Point& pt : result_D2) {
-            for (double coord : pt.coords) {
-                cout << coord << " ";
-            }
-            cout << endl;
-        }
+            cout<<"result_D2 = "<<result_D2<<endl;
+
         cout<<"---------------------------------------"<<endl;
 
 #endif
@@ -436,17 +427,19 @@ int main (int argc, char *argv[])
             lowest_ul = lowest_ul->parent;
 
 
-            vector<pair<double, double>> ranges_Dl = {{0, (double) x}, {(double) x,(double) text_size}, { (double) patternSizes[i] + y, (double) text_size}};
+            vector<pair<INT, INT>> ranges_Dl = {{0,  x}, { x, text_size}, {  patternSizes[i] + y,  text_size}};
+
+//            for (const auto& range : ranges_Dl) {
+//                cout << "{" << range.first << ", " << range.second << "}" << endl;
+//            }
+
+
 
             INT result_Dl = preorderID2KDTree[lowest_ul->preorderId]->rangeSearch(ranges_Dl);
 #ifdef VERBOSE
 
-            for (const Point& pt : result_Dl) {
-            for (double coord : pt.coords) {
-                cout << coord << " ";
-            }
-            cout << endl;
-        }
+            cout<<"result_Dl = "<<result_Dl<<endl;
+
         cout<<"---------------------------------------"<<endl;
 
 
@@ -469,26 +462,28 @@ int main (int argc, char *argv[])
 
 
 
-            vector<pair<double, double>> ranges_D1 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
-                                                      {0,(double) patternSizes[i] +y},{(double) patternSizes[i] +y, (double) text_size}};
+            vector<pair<INT, INT>> ranges_D1 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, text_size},
+                                                      {0, patternSizes[i] +y},{ patternSizes[i] +y,  text_size}};
+
+//            for (const auto& range : ranges_D1) {
+//                cout << "{" << range.first << ", " << range.second << "}" << endl;
+//            }
 
             INT result_D1 = KD_D1.rangeSearch(ranges_D1);
 #ifdef VERBOSE
-            for (const Point& pt : result_D1) {
-            for (double coord : pt.coords) {
-                cout << coord << " ";
-            }
-            cout << endl;
-        }
+            cout<<"result_D1 = "<<result_D1<<endl;
+
         cout<<"---------------------------------------"<<endl;
 #endif
 
             //D_2
 
 
-            vector<pair<double, double>> ranges_D2 = {{(double) up->preorderId, (double) rightpreorderId}, {0, (double)x}, { (double)x, (double)text_size},
-                                                      {0,(double) patternSizes[i] +y},{(double) patternSizes[i] +y, (double) text_size}};
-
+            vector<pair<INT, INT>> ranges_D2 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, text_size},
+                                                      {0, patternSizes[i] +y},{ patternSizes[i] +y,  text_size}};
+//            for (const auto& range : ranges_D2) {
+//                cout << "{" << range.first << ", " << range.second << "}" << endl;
+//            }
             INT result_D2 = KD_D2.rangeSearch(ranges_D2);
 
 
@@ -496,12 +491,8 @@ int main (int argc, char *argv[])
 
 #ifdef VERBOSE
 
-            for (const Point& pt : result_D2) {
-            for (double coord : pt.coords) {
-                cout << coord << " ";
-            }
-            cout << endl;
-        }
+            cout<<"result_D2 = "<<result_D2<<endl;
+
         cout<<"---------------------------------------"<<endl;
 #endif
         }
@@ -511,28 +502,18 @@ int main (int argc, char *argv[])
         double query_time = std::chrono::duration_cast < std::chrono::microseconds > (query_end - query_start).count()*0.000001;
 
 
+        cout<<"Pattern "<< i<<": "<<patterns[i]<<" and x = "<<x <<"; y = "<<y<<endl;
 
 
         cout<<"There are "<<counts<< " distinct XPY that occur in T."<<endl;
 
         cout<<"Time for query of counting: "<<query_time<<endl;
+        cout<<"------------------------------------------------------"<<endl;
 
         free(pattern_rev);
 
     }
 
-
-
-    cout<<"----------------------------------------------------"<<endl;
-
-    double Construction_time = std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_start).count()*0.000001;
-
-
-    long long IndexSpace_end = memory_usage();
-
-    long long memory_Index = IndexSpace_end - IndexSpace_start;
-    cout<<"Time for construction of counting: "<<Construction_time<<endl;
-    cout<<"Index memory of counting: "<< memory_Index / (1024.0 * 1024.0)<<"MB"<<endl;
 
 
 

@@ -21,6 +21,7 @@ long long memory_usage() {
 }
 
 
+
 void readfile_woDollar(string &filename, string &patternPath, unsigned char * &text_string, std::vector<unsigned char *> &patterns,
                        std::vector<std::pair<INT, INT>> &contextSizes, INT& text_size, vector<INT> & patternSizes, INT &B){
     std::ifstream is_text(filename, std::ios::binary);
@@ -243,7 +244,6 @@ int main(int argc, char *argv[]) {
 
 //    readfile_woDollar(filename, patternPath, text_string_woDollar, patterns, contextSizes, text_size, patternSizes, B);
 
-
     readfile_wDollar(filename, patternPath, text_string_wDollar, patterns, contextSizes, text_size, patternSizes, B1, B2, B_T);
 //
 //
@@ -260,13 +260,15 @@ int main(int argc, char *argv[]) {
 //
 //    text_string_dollar[text_size] = '$';
 //    text_string_dollar[text_size + 1] = '\0';
+
+//    long long LZ77_start = memory_usage();
+
     std::vector<INT> phrase_starts;
 
     {
-        LZ77 lz77(text_string_wDollar);
-        std::vector<std::pair<INT, std::variant<INT, unsigned char>>> compressed;
 
-        lz77.compress(compressed, phrase_starts);
+        LZ77 lz77(text_string_wDollar);
+        lz77.compress(phrase_starts);
 
     }
 
@@ -278,6 +280,12 @@ int main(int argc, char *argv[]) {
     vector<INT> hash_positions_rev;
 
     unsigned char *new_string = construct_string_from_boundaries(text_string_wDollar, phrase_starts, B_T, hash_positions);
+
+    phrase_starts.clear();
+    phrase_starts.shrink_to_fit();
+    std::vector<INT>().swap(phrase_starts);
+//    cout<<"-----------after LZ77-----------"<<endl;
+
     INT new_string_size = strlen((const char *) new_string);
 
     INT num_hash = hash_positions.size();
@@ -289,8 +297,7 @@ int main(int argc, char *argv[]) {
     }
 
     std::reverse(hash_positions_rev.begin(), hash_positions_rev.end());
-    phrase_starts.clear();
-    phrase_starts.shrink_to_fit();
+
     cout<< "B1 =  "<<B1 <<"; B2 = "<<B2<< "; B for lz77: " << B_T<<endl;
     cout << "The number of hash in T' = " << num_hash << endl;
     // -1: $
@@ -300,10 +307,13 @@ int main(int argc, char *argv[]) {
 
 
     unsigned char *new_string_rev = reverseString(new_string);
+//    long long LZ77_end = memory_usage();
+//    cout<<"LZ77 memory: "<< (LZ77_end-LZ77_start) / (1024.0 * 1024.0)<<"MB"<<endl;
 
     long long IndexSpace_start = memory_usage();
 
     auto Construction_start = std::chrono::high_resolution_clock::now();
+//    long long ST_start = memory_usage();
 
 
     suffixTree* ST_newString = new suffixTree(new_string, new_string_size);
@@ -311,10 +321,16 @@ int main(int argc, char *argv[]) {
 //    suffixTree ST_newString(new_string, new_string_size);
     ST_newString->initHLD();
 
+//    long long ST_end = memory_usage();
+
+//    long long trunST_start = memory_usage();
 
     truncatedSuffixTree truncatedST(ST_newString, B1, hash_positions);
 
     truncatedST.initHLD();
+
+
+    //    long long trunST_end= memory_usage();
 
 
     delete ST_newString;
@@ -331,6 +347,7 @@ int main(int argc, char *argv[]) {
 //    cout<<"T'_rev ="<<new_string_rev<<endl;
 
 
+    INT KD_l=0;
 
     std::vector<Point> pointsD1;
     std::vector<Point> pointsD2;
@@ -351,7 +368,6 @@ int main(int argc, char *argv[]) {
 
 
     //---------------Index---------------//
-
 
 
     INT cnt = 0;
@@ -385,7 +401,14 @@ int main(int argc, char *argv[]) {
             truncatedPT.addPoints(pointsD1, pointsD2, pointsDl, lightNode);
             if (!pointsDl.empty()){
                 KDTree *KD_Dl = new KDTree(pointsDl);
+//                long long KD_start = memory_usage();
+
                 preorderID2KDTree[lightNode->preorderId] = KD_Dl;
+//                long long KD_end = memory_usage();
+
+//                KD_Dl = KD_Dl + KD_end-KD_start;
+
+
             }
 
 
@@ -422,18 +445,22 @@ int main(int argc, char *argv[]) {
 
     auto Construction_middle2 = std::chrono::high_resolution_clock::now();
 
+
+//    long long KD_start = memory_usage();
+
     KDTree KD_D1(pointsD1);
 
     KDTree KD_D2(pointsD2);
+//    long long KD_end = memory_usage();
+
+
+
+    auto Construction_end = std::chrono::high_resolution_clock::now();
 
     cout<<"pointsD1.size(): "<<pointsD1.size()<<endl;
 
     cout<<"pointsD2.size(): "<<pointsD2.size()<<endl;
     cout<<"preorderID2KDTree.size(): "<<preorderID2KDTree.size()<<endl;
-
-
-    auto Construction_end = std::chrono::high_resolution_clock::now();
-
 
     double Construction_time = std::chrono::duration_cast < std::chrono::microseconds > (Construction_middle1 - Construction_start).count()*0.000001 + std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_middle2).count()*0.000001;
 
@@ -441,16 +468,25 @@ int main(int argc, char *argv[]) {
     pointsD2.clear();
     pointsD1.shrink_to_fit();
     pointsD2.shrink_to_fit();
-    free(new_string_rev);
 
+    std::vector<Point>().swap(pointsD1);
+    std::vector<Point>().swap(pointsD2);
 
 
     long long IndexSpace_end = memory_usage();
 
     long long memory_Index = IndexSpace_end - IndexSpace_start;
+//    long long memory_ST = ST_end - ST_start;
+//    long long memory_trunST = trunST_end - trunST_start;
+//    long long memory_KD = KD_l +KD_end - KD_start;
+
     cout<<"====================================== counting index construction=============================="<<endl;
 
     cout<<"Index memory of counting: "<< memory_Index / (1024.0 * 1024.0)<<"MB"<<endl;
+//    cout<<"ST memory: "<< memory_ST / (1024.0 * 1024.0)<<"MB"<<endl;
+//    cout<<"truncated ST memory: "<< memory_trunST / (1024.0 * 1024.0)<<"MB"<<endl;
+//    cout<<"KD memory: "<< memory_KD / (1024.0 * 1024.0)<<"MB"<<endl;
+
     cout<<"Index construction time: "<< Construction_time<< " seconds"<<endl;
 
 
@@ -532,6 +568,7 @@ int main(int argc, char *argv[]) {
 //            for (const auto& range : ranges_D2) {
 //                cout << "{" << range.first << ", " << range.second << "}" << endl;
 //            }
+
 
             INT result_D2 = KD_D2.rangeSearch(ranges_D2);
 
@@ -656,6 +693,7 @@ int main(int argc, char *argv[]) {
     for (auto& pair : preorderID2KDTree) {
         delete pair.second;
     }
+    free(new_string_rev);
 
     free(text_string_wDollar);
 
