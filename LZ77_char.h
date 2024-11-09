@@ -23,6 +23,7 @@ public:
     void compress(std::vector<INT> &phrase_start_locations);
 
     std::pair<INT, INT> find_longest_match(INT start);
+    std::pair<INT, INT> find_longest_match_brute_force(INT start);
     unsigned char* T;
 
     suffixTree* ST;
@@ -30,7 +31,16 @@ public:
 
     ~LZ77();
 
+private:
+    int hit_factor = 2;
+    int k = 10;
+    vector<int>* hashes;
+    vector<vector<int>>* hits;
+
 };
+
+vector<vector<int>> compute_hits(unsigned char* text, int hit_factor);
+
 
 unsigned char* construct_string_from_boundaries(unsigned char* text, const std::vector<INT>& phrase_starts, INT &B, vector<INT> &hash_positions);
 

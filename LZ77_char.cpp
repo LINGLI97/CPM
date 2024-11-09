@@ -1,12 +1,13 @@
 #include <iostream>
 #include <algorithm>
+#include <vector>
 #include <cstring>  // For strlen and memcpy
 #include "LZ77_char.h"
 
 
 void printmemory_usage() {
     struct mallinfo2 mi = mallinfo2();
-    cout<< (mi.uordblks + mi.hblkhd) /(1024.0 * 1024.0)<<endl;
+    cout<< "Memory usage: " << (mi.uordblks + mi.hblkhd) /(1024.0 * 1024.0)<<endl;
 }
 
 LZ77::LZ77(unsigned char* text) {
@@ -15,11 +16,59 @@ LZ77::LZ77(unsigned char* text) {
     // add $ to the end of text
 
     this->T = text;
-//    std::cout << "Building suffix tree..." << std::endl;
 
-    this->ST = new suffixTree(text, this->n);
-//    this->ST->initHLD();
+    this->hashes = new vector<int>(this->n);
+    this->hits = new vector<vector<int>>(this->n/this->hit_factor);
 
+    int base = 4;
+    int mod = this->n/this->hit_factor;
+    cout << "n = " << this->n << endl;
+    cout << "mod = " << mod << endl;
+
+    
+    int precomputedPower = 1;  // Reset power calculation for this length
+    int hash = 0;
+    for (int i = 0; i < k; i++) {
+        hash = (hash * base + T[i]) % mod;
+        precomputedPower = (precomputedPower * base) % mod;
+    }
+
+    cout << "Computing KR-hashes for LZ77 parse..." << endl;
+    //cout << hash << endl;
+    hashes->at(0) = hash;
+    hits->at(0).push_back(0);
+    for (int i = 1; i < n - k; i++) {
+        //cout << "T[i-1] = " << T[i-1] << endl;
+        //cout << "T[i+k] = " << T[i+k] << endl;
+
+        // Update the hash by rolling (only if there's another window to check)
+        hash = (hash - T[i-1] * precomputedPower % mod + mod) % mod;
+        hash = (hash * base + T[i + k]) % mod;
+        //cout << i << ":" << hash << endl;
+        hits->at(hash).push_back(i);
+        hashes->at(i) = hash;
+    }
+    
+
+    cout << "Done computing hashes" << endl;
+    /*
+    // print for debugging
+    for(int i = 0; i < hits->size(); i++){
+        cout << i << ": ";
+        for(int j = 0; j < hits->at(i).size(); j++){
+            cout << hits->at(i).at(j) << " ";
+        }
+        cout << endl;
+    }
+    */
+
+}
+
+
+int rollHash(int prevHash, char oldChar, char newChar, int k, int power, int base, int mod) {
+    prevHash = (prevHash - oldChar * power % mod + mod) % mod;
+    prevHash = (prevHash * base + newChar) % mod;
+    return prevHash;
 }
 
 
@@ -28,59 +77,84 @@ void LZ77::compress(std::vector<INT> &phrase_start_locations) {
 //    std::cout << "Performing LZ77 factorization..." << std::endl;
     size_t i = 0;
 
-    while (i < n) {
+    // use hashes where available
+    while (i < n-k) {
+        //cout << i << endl;
         auto [match_length, match_distance] = find_longest_match(i);
         phrase_start_locations.push_back(i);
-
-//        if (match_length == 0) {
-//            result.push_back(std::make_pair(-1, T[i]));  // T[i] 是 unsigned char 类型
-//        } else {
-//            result.push_back(std::make_pair(match_distance, match_length));  // match_length 是 int 类型
-//        }
-
         i += (match_length == 0) ? 1 : match_length;
     }
+    // brute force remaining
+    while(i >= n-k && i < n){
+        //cout << i << endl;
+        auto [match_length, match_distance] = find_longest_match_brute_force(i);
+        phrase_start_locations.push_back(i);
+        i += (match_length == 0) ? 1 : match_length;
 
+    }
+
+    printmemory_usage();
 }
 
-std::pair<INT, INT> LZ77::find_longest_match(INT start) {
-    stNode* current_node = this->ST->root;
+
+std::pair<INT, INT> LZ77::find_longest_match_brute_force(INT start) {
+
     INT match_length = 0;
     INT match_position = -1;
     INT i = start;
 
-    while (i < n) {
-        unsigned char current_char = T[i];
-        if (current_node->child[current_char] == nullptr) {
-            break;
+    for(int j = 0; j < i; j++){
+        //cout << "\tj: " << j << endl;
+        int k = 0;
+        while(k < n && T[i+k] == T[j+k])
+        {
+            //cout << "\t\tk: " << k << endl;
+            k++;
         }
-
-        stNode* child = current_node->child[current_char];
-        if (child->start >= start) {
-            break;
+        if(k > match_length){
+            match_length = k;
+            match_position = j;
         }
-
-        INT edge_length = child->depth - child->parent->depth;
-        INT j = 0;
-
-        while (j < edge_length && i < n && T[child->start + child->parent->depth  + j] == T[i]) {
-            i++;
-            j++;
-            match_length++;
-        }
-
-        if (j < edge_length) {
-            break;
-        }
-
-        match_position = child->start;
-        current_node = child;
     }
+    
 
     if (match_position != -1 && match_length > 0) {
         return std::make_pair(match_length, start - match_position);
     }
+    return std::make_pair(0, 0);
+}
 
+
+
+
+std::pair<INT, INT> LZ77::find_longest_match(INT start) {
+
+    INT match_length = 0;
+    INT match_position = -1;
+    INT i = start;
+
+    int hash = this->hashes->at(i);
+    //cout << "hash: " << hash << endl;
+    for(int j : this->hits->at(hash)){
+        if(j >= i){
+            break;
+        }
+        //cout << "\tj: " << j << endl;
+        int k = 0;
+        while(k < n && T[i+k] == T[j+k])
+        {
+            //cout << "\t\tk: " << k << endl;
+            k++;
+        }
+        if(k > match_length){
+            match_length = k;
+            match_position = j;
+        }
+    }
+    
+    if (match_position != -1 && match_length > 0) {
+        return std::make_pair(match_length, start - match_position);
+    }
     return std::make_pair(0, 0);
 }
 
@@ -198,7 +272,8 @@ unsigned char* construct_string_from_boundaries(unsigned char* text, const std::
 
 LZ77::~LZ77() {
     // Destructor to free the dynamically allocated memory for ST
-    delete ST;
-
+    //delete ST;
+    delete hits;
+    delete hashes;
 
 }
