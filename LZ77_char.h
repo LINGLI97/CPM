@@ -22,7 +22,7 @@ public:
 
     void compress(std::vector<INT> &phrase_start_locations);
 
-    std::pair<INT, INT> find_longest_match(INT start);
+    std::pair<INT, INT> find_longest_match(INT start, INT limit);
     std::pair<INT, INT> find_longest_match_brute_force(INT start);
     unsigned char* T;
 
@@ -33,7 +33,7 @@ public:
 
 private:
     int hit_factor = 2;
-    int k = 10;
+    int k = 7;
     vector<int>* hashes;
     vector<vector<int>>* hits;
 
