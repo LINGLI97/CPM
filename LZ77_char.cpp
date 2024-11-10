@@ -30,29 +30,37 @@ LZ77::LZ77(unsigned char* text) {
     int hash = 0;
     for (int i = 0; i < k; i++) {
         hash = (hash * base + T[i]) % mod;
+    }
+    for(int i =0; i < k-1; i++){
         precomputedPower = (precomputedPower * base) % mod;
     }
+    cout << "precomputedPower = " << precomputedPower << endl;
 
     cout << "Computing KR-hashes for LZ77 parse..." << endl;
-    //cout << hash << endl;
+    //cout << "0:" << hash << endl;
+    //cout << endl;
+    
     hashes->at(0) = hash;
-    hits->at(0).push_back(0);
+    hits->at(hash).push_back(0);
     for (int i = 1; i < n - k; i++) {
+        //cout << "i = " << i << endl;
         //cout << "T[i-1] = " << T[i-1] << endl;
-        //cout << "T[i+k] = " << T[i+k] << endl;
+        //cout << "T[i+k-1] = " << T[i+k-1] << endl;
 
         // Update the hash by rolling (only if there's another window to check)
-        hash = (hash - T[i-1] * precomputedPower % mod + mod) % mod;
-        hash = (hash * base + T[i + k]) % mod;
+        hash = (hash - T[i-1] * precomputedPower) % mod + mod;
+        hash = (hash * base  + T[i + k - 1]) % mod;
         //cout << i << ":" << hash << endl;
         hits->at(hash).push_back(i);
         hashes->at(i) = hash;
+        //cout << endl;
     }
     
 
     cout << "Done computing hashes" << endl;
-    /*
+    
     // print for debugging
+    /*
     for(int i = 0; i < hits->size(); i++){
         cout << i << ": ";
         for(int j = 0; j < hits->at(i).size(); j++){
@@ -61,6 +69,7 @@ LZ77::LZ77(unsigned char* text) {
         cout << endl;
     }
     */
+    
 
 }
 
@@ -79,14 +88,14 @@ void LZ77::compress(std::vector<INT> &phrase_start_locations) {
 
     // use hashes where available
     while (i < n-k) {
-        //cout << i << endl;
-        auto [match_length, match_distance] = find_longest_match(i);
+        cout << i << endl;
+        auto [match_length, match_distance] = find_longest_match(i, k);
         phrase_start_locations.push_back(i);
         i += (match_length == 0) ? 1 : match_length;
     }
     // brute force remaining
     while(i >= n-k && i < n){
-        //cout << i << endl;
+        cout << i << endl;
         auto [match_length, match_distance] = find_longest_match_brute_force(i);
         phrase_start_locations.push_back(i);
         i += (match_length == 0) ? 1 : match_length;
@@ -127,29 +136,53 @@ std::pair<INT, INT> LZ77::find_longest_match_brute_force(INT start) {
 
 
 
-std::pair<INT, INT> LZ77::find_longest_match(INT start) {
+std::pair<INT, INT> LZ77::find_longest_match(INT start, INT limit) {
 
     INT match_length = 0;
     INT match_position = -1;
     INT i = start;
 
+
     int hash = this->hashes->at(i);
-    //cout << "hash: " << hash << endl;
+
+    
+    //cout << "number of hash hits: " << this->hits->at(hash).size() << endl;
     for(int j : this->hits->at(hash)){
+        //cout << "hit: " << j << endl;
         if(j >= i){
             break;
         }
         //cout << "\tj: " << j << endl;
-        int k = 0;
-        while(k < n && T[i+k] == T[j+k])
+        int l = 0;
+        while(i+l < n && T[i+l] == T[j+l])
         {
             //cout << "\t\tk: " << k << endl;
-            k++;
+            l++;
         }
-        if(k > match_length){
-            match_length = k;
+        if(l > match_length){
+            match_length = l;
             match_position = j;
         }
+    }
+    
+
+    //cout << "match_length: " << match_length << " limit: " << limit << endl;
+    if(match_length < limit){
+        //cout << " brute forcing" << endl;
+        for(int j = 0; j < i; j++){
+            int l = 0;
+            while(i+l < n  && l < limit && T[i+l] == T[j+l])
+            {
+                //cout << "\t\tk: " << k << endl;
+                l++;
+                if(l > match_length){
+                    match_length = l;
+                    match_position = j;
+                }
+            }
+        }
+    }else{
+        //cout << "Not brute forcing" << endl;
     }
     
     if (match_position != -1 && match_length > 0) {
