@@ -169,13 +169,19 @@ void truncatedPrefixTree::addPoints(std::vector<Point> &pointsD1, std::vector<Po
         stack.pop();  // Pop before size calculation to avoid double counting
 
         if (lightNode->parent and top->parent){
-            pointsD1.push_back({{lightNode->preorderId,  top->parent->depth+1,  top->depth,  lightNode->parent->depth +1 , lightNode->depth}});
+//            pointsD1.push_back({{top->parent->depth+1, lightNode->parent->depth +1 , lightNode->preorderId,  top->depth,  lightNode->depth}});
+            pointsD1.push_back({{ lightNode->depth,  top->depth,  lightNode->preorderId,  lightNode->parent->depth +1 ,top->parent->depth+1}});
+
+//            pointsD1.push_back({{lightNode->preorderId,  top->parent->depth+1,  top->depth,  lightNode->parent->depth +1 , lightNode->depth}});
+
         }
         if (top->parent){
-            pointsD2.push_back({{lightNode->preorderId,  top->parent->depth+1,  top->depth, lightNode->depth + 1,  top->phi }});
+//            pointsD2.push_back({{lightNode->preorderId,  top->parent->depth+1,  top->depth, lightNode->depth + 1,  top->phi }});
+//            pointsD2.push_back({{ top->parent->depth+1,lightNode->depth + 1,   lightNode->preorderId, top->depth,   top->phi }});
+            pointsD2.push_back({{    top->phi, top->depth,  lightNode->preorderId,lightNode->depth + 1, top->parent->depth+1 }});
 
 //                pointsDl.push_back({{ top->parent->depth+1,  top->depth , top->phi}});
-            pointsDl.push_back({{ top->parent->depth+1,  top->depth , top->phi}});
+            pointsDl.push_back({{top->phi,   top->depth , top->parent->depth+1 }});
 
 
         }

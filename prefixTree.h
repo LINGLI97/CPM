@@ -7,8 +7,14 @@
 #include <vector>
 #include <cstring>  // For strlen and strcmp
 #include "SA_LCP_LCE.h"
+#ifdef COUNT
+#include "kd_tree_counting.h"
 
-#include "kd_tree.h"
+#else
+#include "kd_tree_reporting.h"
+
+#endif
+
 #include "stNode.h"
 class prefixTree
 {

@@ -16,82 +16,82 @@ truncatedSuffixTree::truncatedSuffixTree(suffixTree *&originalTree, INT &B, vect
 
 
 
-
-void truncatedSuffixTree::generateDot(stNode* node, std::ofstream& dotFile, bool suf) {
-    if (!node) return;
-
-    std::vector<stNode*> children = node->allChild();
-    if (children.empty()) {
-
-//            dotFile << "\"" << node << "\" [shape=ellipse, style=filled, fillcolor=green, label=\" Start: " << node->getStart() << "\"];\n";
-
-    }
-
-    if (!children.empty()){
-
-        INT numChildren = children.size();
-
-        for (INT i = 0; i < numChildren; ++i) {
-
-            dotFile << "\"" << node << "\" -> \"" << children[i] << "\" [label=\""
-                    << " label: " << children[i]->label
-                    << "\"];\n";
-
-
-            dotFile << "\"" << children[i] << "\" [label=\""
-                    << " Heavy: " << (children[i]->heavy ? "Yes" : "No")
-                    << " , start: " << children[i]->start
-                    << " , string depth: " << children[i]->depth << " \"";
-
-
-            if (!children[i]->heavy) {
-                dotFile << ", style=filled, fillcolor=green";
-            }
-
-            if (children[i]->heavy) {
-                dotFile << ", style=filled, fillcolor=red";
-            }
-            dotFile << "];\n";
-
-            generateDot(children[i], dotFile, suf);
-
-
-        }
-    }
-    if (suf){
-        if (node->slink!=NULL){
-            dotFile << "\"" << node << "\" -> \"" << node->slink << "\" [label=\"" << "" << "\",color=\"red\"];\n";
-        }
-
-    }
-
-
-
-}
-
-void truncatedSuffixTree::exportSuffixTreeToDot(const std::string& filename,bool suf) {
-    std::ofstream dotFile(filename);
-    if (!dotFile.is_open()) {
-        std::cerr << "Unable to open file for writing: " << filename << std::endl;
-        return;
-    }
-
-    //DOT setting
-    dotFile << "digraph SuffixTree {\n";
-    dotFile << "node [shape=ellipse, style=filled, fillcolor=lightgrey];\n";
-    dotFile << "edge [color=black];\n";
-    dotFile << "graph [nodesep=0.5, ranksep=1, splines=polyline];\n";
-
-
-
-
-    generateDot(root, dotFile,suf);  //without leafCount and flag info
-//    generateCount(root, dotFile,suf);  //with leafCount and flag info
-
-
-    dotFile << "}\n";
-    dotFile.close();
-}
+//
+//void truncatedSuffixTree::generateDot(stNode* node, std::ofstream& dotFile, bool suf) {
+//    if (!node) return;
+//
+//    std::vector<stNode*> children = node->allChild();
+//    if (children.empty()) {
+//
+////            dotFile << "\"" << node << "\" [shape=ellipse, style=filled, fillcolor=green, label=\" Start: " << node->getStart() << "\"];\n";
+//
+//    }
+//
+//    if (!children.empty()){
+//
+//        INT numChildren = children.size();
+//
+//        for (INT i = 0; i < numChildren; ++i) {
+//
+//            dotFile << "\"" << node << "\" -> \"" << children[i] << "\" [label=\""
+//                    << " label: " << children[i]->label
+//                    << "\"];\n";
+//
+//
+//            dotFile << "\"" << children[i] << "\" [label=\""
+//                    << " Heavy: " << (children[i]->heavy ? "Yes" : "No")
+//                    << " , start: " << children[i]->start
+//                    << " , string depth: " << children[i]->depth << " \"";
+//
+//
+//            if (!children[i]->heavy) {
+//                dotFile << ", style=filled, fillcolor=green";
+//            }
+//
+//            if (children[i]->heavy) {
+//                dotFile << ", style=filled, fillcolor=red";
+//            }
+//            dotFile << "];\n";
+//
+//            generateDot(children[i], dotFile, suf);
+//
+//
+//        }
+//    }
+//    if (suf){
+//        if (node->slink!=NULL){
+//            dotFile << "\"" << node << "\" -> \"" << node->slink << "\" [label=\"" << "" << "\",color=\"red\"];\n";
+//        }
+//
+//    }
+//
+//
+//
+//}
+//
+//void truncatedSuffixTree::exportSuffixTreeToDot(const std::string& filename,bool suf) {
+//    std::ofstream dotFile(filename);
+//    if (!dotFile.is_open()) {
+//        std::cerr << "Unable to open file for writing: " << filename << std::endl;
+//        return;
+//    }
+//
+//    //DOT setting
+//    dotFile << "digraph SuffixTree {\n";
+//    dotFile << "node [shape=ellipse, style=filled, fillcolor=lightgrey];\n";
+//    dotFile << "edge [color=black];\n";
+//    dotFile << "graph [nodesep=0.5, ranksep=1, splines=polyline];\n";
+//
+//
+//
+//
+//    generateDot(root, dotFile,suf);  //without leafCount and flag info
+////    generateCount(root, dotFile,suf);  //with leafCount and flag info
+//
+//
+//    dotFile << "}\n";
+//    dotFile.close();
+//}
 
 void truncatedSuffixTree::clearLeaves() {
 

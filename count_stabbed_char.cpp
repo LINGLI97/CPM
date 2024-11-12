@@ -4,10 +4,18 @@
 #include <algorithm>
 #include "cmdline.h"
 #include <fstream>
+//#include "LZ77_char_updated.h"
 #include "LZ77_char.h"
 #include <algorithm>  // std::lower_bound
-#include "kd_tree.h"
 #include "truncatedSuffixTree_char.h"
+
+#ifdef COUNT
+#include "kd_tree_counting.h"
+
+#else
+#include "kd_tree_reporting.h"
+
+#endif
 
 #include "truncatedPrefixTree_char.h"
 #include "prefixTree.h"
@@ -90,7 +98,7 @@ void readfile_woDollar(string &filename, string &patternPath, unsigned char * &t
 
 
 void readfile_wDollar(string &filename, string &patternPath, unsigned char * &text_string, std::vector<unsigned char *> &patterns,
-                       std::vector<std::pair<INT, INT>> &contextSizes, INT& text_size, vector<INT> & patternSizes, INT &B1, INT &B2, INT &B_T){
+                       std::vector<std::pair<INT, INT>> &contextSizes, INT& text_size, INT& alphabetSize, vector<INT> & patternSizes, INT &B1, INT &B2, INT &B_T){
     std::ifstream is_text(filename, std::ios::binary);
     if (!is_text) {
         std::cerr << "Error opening input file: " << filename << std::endl;
@@ -100,6 +108,7 @@ void readfile_wDollar(string &filename, string &patternPath, unsigned char * &te
     is_text.seekg(0, std::ios::end);
     text_size = is_text.tellg();
     is_text.seekg(0, std::ios::beg);
+    unordered_set<unsigned char> alphabet;
 
     text_string = (unsigned char *)malloc((text_size + 2) * sizeof(unsigned char));
 
@@ -107,14 +116,20 @@ void readfile_wDollar(string &filename, string &patternPath, unsigned char * &te
     for (INT i = 0; i < text_size; i++) {
         is_text.read(reinterpret_cast<char *>(&c), 1);
         text_string[i] = (unsigned char)c;
+        alphabet.insert((unsigned char)c);
+
     }
 
     is_text.close();
     text_string[text_size] = '$';
+    alphabet.insert('$');
 
     text_string[text_size +1] = '\0';
 
     text_size  = text_size +1 ;
+
+    alphabetSize = alphabet.size();
+
 //    text_string_dollar = (unsigned char *)malloc((text_size + 2) * sizeof(unsigned char));
 //
 //    std::memcpy(text_string_dollar, text_string, text_size * sizeof(unsigned char));
@@ -140,11 +155,11 @@ void readfile_wDollar(string &filename, string &patternPath, unsigned char * &te
             std::cerr << "Error reading line: " << line << std::endl;
             continue;  // Skip the invalid line
         }
-        if (pattern_str.size() + y +1 > B1){
-            B1 = pattern_str.size() + y +1;
+        if (pattern_str.size() + y > B1){
+            B1 = pattern_str.size() + y;
         }
-        if(x + 1> B2){
-            B2 = x + 1;
+        if(x > B2){
+            B2 = x ;
         }
 
         if (x + y+ pattern_str.size() > B_T){
@@ -239,39 +254,32 @@ int main(int argc, char *argv[]) {
     std::vector<std::pair<INT, INT>> contextSizes;
 
     INT text_size = 0;
-
+    INT alphabetSize= 0;
     vector<INT> patternSizes;
 
 //    readfile_woDollar(filename, patternPath, text_string_woDollar, patterns, contextSizes, text_size, patternSizes, B);
 
-    readfile_wDollar(filename, patternPath, text_string_wDollar, patterns, contextSizes, text_size, patternSizes, B1, B2, B_T);
-//
-//
-//    B1 = 11;
-//    B2 = 11;
-
-//    B = parser.get<int>("B");
-
-//    B = 20;
-
-//    unsigned char * text_string_dollar = (unsigned char *)malloc(( text_size + 2) * sizeof(unsigned char));
-//
-//    std::memcpy(text_string_dollar, text_string_woDollar, text_size * sizeof(unsigned char));
-//
-//    text_string_dollar[text_size] = '$';
-//    text_string_dollar[text_size + 1] = '\0';
-
-//    long long LZ77_start = memory_usage();
+    readfile_wDollar(filename, patternPath, text_string_wDollar, patterns, contextSizes, text_size, alphabetSize, patternSizes, B1, B2, B_T);
 
     std::vector<INT> phrase_starts;
 
-    {
 
-        LZ77 lz77(text_string_wDollar);
-        lz77.compress(phrase_starts);
 
-    }
+    auto LZ77_start = std::chrono::high_resolution_clock::now();
 
+
+
+    LZ77* lz77 = new LZ77(text_string_wDollar, alphabetSize);
+
+    lz77->compress(phrase_starts);
+
+    cout<<"phrase_starts.size() = "<<phrase_starts.size()<<endl;
+
+//    printmemory_usage();
+
+    auto LZ77_end = std::chrono::high_resolution_clock::now();
+    delete lz77;
+    lz77 = nullptr;
 
     //release all memories
     //add $ at the end of new string
@@ -291,9 +299,7 @@ int main(int argc, char *argv[]) {
     INT num_hash = hash_positions.size();
     for ( INT & i: hash_positions){
         hash_positions_rev.push_back(new_string_size -2 - i);
-//        cout<<i<<endl;
 
-//        cout<<new_string_size -2 - i<<endl;
     }
 
     std::reverse(hash_positions_rev.begin(), hash_positions_rev.end());
@@ -303,6 +309,12 @@ int main(int argc, char *argv[]) {
     // -1: $
     cout << "text size: " << text_size << "; compressed text size: " << new_string_size << endl;
     cout << "Compressed ratio: " << (double) (new_string_size) / text_size << endl;
+#ifdef COUNT
+    cout<<"using KD counting"<<endl;
+#else
+    cout<<"using KD report"<<endl;
+
+#endif
 
 
 
@@ -351,13 +363,20 @@ int main(int argc, char *argv[]) {
 
     std::vector<Point> pointsD1;
     std::vector<Point> pointsD2;
-    std::unordered_map<INT, KDTree *> preorderID2KDTree;
+
+#ifdef COUNT
+    std::unordered_map<INT, KDTreeCounting *> preorderID2KDTree;
+
+#else
+    std::unordered_map<INT, KDTreeReporting *> preorderID2KDTree;
+
+#endif
+
 
     {
     /*Prepared SA, invSA, LCP, LCE, rmq for the original string*/
     SA_LCP_LCE DS_org(new_string, new_string_size);
 //        printArray("SA_rev", DS_org.SA, new_string_size);
-
 
 
     /*Prepared SA_rev, invSA_rev, LCP_rev, LCE_rev, rmq_rev*/
@@ -398,15 +417,29 @@ int main(int argc, char *argv[]) {
             prefixTree PT(prefixesStarting, DS_rev);
             PT.updatePhi();
             truncatedPrefixTree truncatedPT(PT, B2, hash_positions_rev);
+
             truncatedPT.addPoints(pointsD1, pointsD2, pointsDl, lightNode);
+
             if (!pointsDl.empty()){
-                KDTree *KD_Dl = new KDTree(pointsDl);
+
+
+
+#ifdef COUNT
+                KDTreeCounting *KD_Dl = new KDTreeCounting(pointsDl);
+
+#else
+                KDTreeReporting *KD_Dl = new KDTreeReporting(pointsDl);
+
+#endif
+
+
 //                long long KD_start = memory_usage();
 
                 preorderID2KDTree[lightNode->preorderId] = KD_Dl;
 //                long long KD_end = memory_usage();
 
 //                KD_Dl = KD_Dl + KD_end-KD_start;
+
 
 
             }
@@ -448,10 +481,23 @@ int main(int argc, char *argv[]) {
 
 //    long long KD_start = memory_usage();
 
-    KDTree KD_D1(pointsD1);
 
-    KDTree KD_D2(pointsD2);
-//    long long KD_end = memory_usage();
+#ifdef COUNT
+    KDTreeCounting KD_D1(pointsD1);
+    KDTreeCounting KD_D2(pointsD2);
+
+#else
+
+    KDTreeReporting KD_D1(pointsD1);
+    KDTreeReporting KD_D2(pointsD2);
+#endif
+
+
+
+
+//    cout<<KD_D2.isTreeBalancedBySize(KD_D2.root)<<endl;
+
+    //    long long KD_end = memory_usage();
 
 
 
@@ -463,6 +509,9 @@ int main(int argc, char *argv[]) {
     cout<<"preorderID2KDTree.size(): "<<preorderID2KDTree.size()<<endl;
 
     double Construction_time = std::chrono::duration_cast < std::chrono::microseconds > (Construction_middle1 - Construction_start).count()*0.000001 + std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_middle2).count()*0.000001;
+
+
+    double LZ77_time = std::chrono::duration_cast < std::chrono::microseconds > (LZ77_end - LZ77_start).count()*0.000001;
 
     pointsD1.clear();
     pointsD2.clear();
@@ -489,6 +538,8 @@ int main(int argc, char *argv[]) {
 
     cout<<"Index construction time: "<< Construction_time<< " seconds"<<endl;
 
+    cout<<"LZ77 time: "<< LZ77_time<< " seconds"<<endl;
+    cout<<"Total construction time: "<< Construction_time + LZ77_time<< " seconds"<<endl;
 
 
 
@@ -543,9 +594,10 @@ int main(int argc, char *argv[]) {
                 current_up = rightChild;
             }
 
+            vector<pair<INT, INT>> ranges_D1 = { { patternSizes[i] +y,  new_string_size},{ x, new_string_size},{ up->preorderId,  rightpreorderId}, {0, patternSizes[i] +y},{0, x}};
 
-            vector<pair<INT, INT>> ranges_D1 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, new_string_size},
-                                                {0, patternSizes[i] +y},{ patternSizes[i] +y,  new_string_size}};
+//            vector<pair<INT, INT>> ranges_D1 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, new_string_size},
+//                                                {0, patternSizes[i] +y},{ patternSizes[i] +y,  new_string_size}};
 
 //            for (const auto& range : ranges_D1) {
 //                cout << "{" << range.first << ", " << range.second << "}" << endl;
@@ -561,9 +613,10 @@ int main(int argc, char *argv[]) {
             //D_2
 
 
+            vector<pair<INT, INT>> ranges_D2 = {{ patternSizes[i] +y,  new_string_size},{ x, new_string_size},{ up->preorderId,  rightpreorderId},  {0, patternSizes[i] +y}, {0, x}};
 
-            vector<pair<INT, INT>> ranges_D2 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, new_string_size},
-                                                {0, patternSizes[i] +y},{ patternSizes[i] +y,  new_string_size}};
+//            vector<pair<INT, INT>> ranges_D2 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, new_string_size},
+//                                                {0, patternSizes[i] +y},{ patternSizes[i] +y,  new_string_size}};
 
 //            for (const auto& range : ranges_D2) {
 //                cout << "{" << range.first << ", " << range.second << "}" << endl;
@@ -589,7 +642,7 @@ int main(int argc, char *argv[]) {
             lowest_ul = lowest_ul->parent;
 
 
-            vector<pair<INT, INT>> ranges_Dl = {{0,  x}, { x, new_string_size}, {  patternSizes[i] + y,  new_string_size}};
+            vector<pair<INT, INT>> ranges_Dl = {{  patternSizes[i] + y,  new_string_size}, { x, new_string_size},{0,  x} };
 
 //            for (const auto& range : ranges_Dl) {
 //                cout << "{" << range.first << ", " << range.second << "}" << endl;
@@ -626,8 +679,11 @@ int main(int argc, char *argv[]) {
 
 
 
-            vector<pair<INT, INT>> ranges_D1 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, new_string_size},
-                                                {0, patternSizes[i] +y},{ patternSizes[i] +y,  new_string_size}};
+//            vector<pair<INT, INT>> ranges_D1 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, new_string_size},
+//                                                {0, patternSizes[i] +y},{ patternSizes[i] +y,  new_string_size}};
+//            vector<pair<INT, INT>> ranges_D1 = {{0, x},{0, patternSizes[i] +y}, { up->preorderId,  rightpreorderId}, { x, new_string_size},
+//                                                { patternSizes[i] +y,  new_string_size}};
+            vector<pair<INT, INT>> ranges_D1 = { { patternSizes[i] +y,  new_string_size},{ x, new_string_size},{ up->preorderId,  rightpreorderId}, {0, patternSizes[i] +y},{0, x}};
 
 
 //            for (const auto& range : ranges_D1) {
@@ -645,8 +701,9 @@ int main(int argc, char *argv[]) {
             //D_2
 
 
-            vector<pair<INT, INT>> ranges_D2 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, new_string_size},
-                                                {0, patternSizes[i] +y},{ patternSizes[i] +y,  new_string_size}};
+//            vector<pair<INT, INT>> ranges_D2 = {{0, x}, {0, patternSizes[i] +y},{ up->preorderId,  rightpreorderId}, { x, new_string_size},
+//                                                { patternSizes[i] +y,  new_string_size}};
+            vector<pair<INT, INT>> ranges_D2 = {{ patternSizes[i] +y,  new_string_size},{ x, new_string_size},{ up->preorderId,  rightpreorderId},  {0, patternSizes[i] +y}, {0, x}};
 
 
 

@@ -25,8 +25,8 @@ public:
 
     void clearLeaves();
 
-    void generateDot(stNode* node, std::ofstream& dotFile, bool suf);
-    void exportSuffixTreeToDot(const std::string& filename,bool suf);
+//    void generateDot(stNode* node, std::ofstream& dotFile, bool suf);
+//    void exportSuffixTreeToDot(const std::string& filename,bool suf);
     void initHLD();
     unordered_set<stNode*> lightNodes;
 
