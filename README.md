@@ -11,10 +11,9 @@ This repository contains the implementation of several algorithms proposed in ou
 .
 ├── EM-SparsePhi-0.2.0/        # lib for external LCP construction of EM
 ├── include/                   # Header files directory
-├── maxmotif20_changed/        # Potentially a module or additional implementation
 ├── psascan/                   # lib for external SA construction of EM
 ├── stxxl/                     # STXXL library includes and binaries
-├── baseline_mining.cpp        # Source file for baseline mining
+├── baseline_mining.cpp        # Source file for IM method
 ├── ExternalMining.cpp         # Source file for EM method
 ├── counting.cpp               # Source file for CPC index
 ├── prefixTree.cpp             # Source file for prefix tree operations
@@ -172,13 +171,7 @@ Run the baseline mining algorithm:
 - **Explanation**:
     - Similar to `run_CI`, but uses the BCPC Index method for pattern counting.
 
-
-
-### Examples
-
-```
-
-```
+    
 
 Datasets
 
