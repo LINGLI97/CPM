@@ -36,7 +36,7 @@ This repository contains the implementation of several algorithms proposed in ou
     - please install [sdsl](https://github.com/simongog/sdsl-lite/tree/master).
     - ```bash
       ./pre-install.sh
-      
+    
 - **STXXL Library**:
     - please install [STXXL](https://stxxl.org/tags/1.4.1/install_unix.html). 
     - Required for external memory operations.
@@ -61,7 +61,7 @@ This repository contains the implementation of several algorithms proposed in ou
     - Required for computing the LZ77 factorization used in BCPC index.
 
 
-    
+​    
 Ensure the paths for these libraries are correctly configured in the Makefile.
 
 ---
@@ -137,14 +137,14 @@ Run the baseline mining algorithm:
 # CPC Problem
 
 1.**R-Index method**:
-    - Build the R-Index:
-      ```bash
-      ./ri-build input.txt
-      ```
-    - Locate patterns:
-      ```bash
-      ./ri-locate -c input.txt input.txt.ri pattern.txt_r_index 2 2
-      ```
+- Build the R-Index:
+```bash
+./ri-build input.txt
+```
+- Locate patterns:
+```bash
+./ri-locate -c input.txt input.txt.ri pattern.txt_r_index 2 2
+```
 - **Explanation**:
     - `-c input.txt`: The input text file.
     - `input.txt.ri`: The R-Index file generated using `ri-build`.
