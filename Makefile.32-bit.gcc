@@ -1,0 +1,150 @@
+MF=     Makefile.32-bit.gcc
+ 
+CC=     g++
+ 
+CFLAGS= -D_USE_32 -fopenmp -msse3 -O3 -fomit-frame-pointer -funroll-loops -DUSE_KEPT_LENGTH
+ 
+LFLAGS= -std=c++17 -I ./libsdsl/include/ -I /usr/include/boost -I ./include/ -L ./libsdsl/lib/ -lsdsl -ldivsufsort -ldivsufsort64 -Wl,-rpath=$(PWD)/libsdsl/lib
+
+
+
+
+EXE=    run_baselineReporting
+
+SRC=    baseline_reporting.cpp
+
+#SRC=    baseline_Sep02.cpp
+
+HD=     baseline.h cmdline.h Makefile
+
+
+
+
+
+baselineMining_EXE=    run_baselineMining
+
+baselineMining_SRC=    baseline_mining.cpp
+
+baselineMining_HD=     baseline.h cmdline.h Makefile
+
+
+baselineMining_OBJ=    $(baselineMining_SRC:.cpp=.o)
+
+
+baselineMining:    $(baselineMining_EXE)
+
+$(baselineMining_EXE): $(baselineMining_OBJ)
+	$(CC) $(CFLAGS) -o $@ $(baselineMining_OBJ) $(LFLAGS)
+
+$(baselineMining_OBJ): $(MF) $(baselineMining_HD)
+
+clean_baselineMining:
+	rm -f $(baselineMining_OBJ) $(baselineMining_EXE) *~
+
+
+
+.SUFFIXES:
+.SUFFIXES: .cpp .o
+
+OBJ=    $(SRC:.cpp=.o)
+
+.cpp.o:
+	$(CC) $(CFLAGS) -c $(LFLAGS) $<
+
+all:    $(EXE)
+
+$(EXE): $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LFLAGS)
+
+$(OBJ): $(MF) $(HD)
+
+clean:
+	rm -f $(OBJ) $(EXE) *~
+
+clean-all:
+	rm -f $(OBJ) $(EXE) *~
+	rm -r libsdsl
+	rm -r sdsl-lite
+
+
+
+
+
+
+
+STXXL_PATH= ./stxxl
+STXXL_INC= -I$(STXXL_PATH)/include
+STXXL_LIB= -L$(STXXL_PATH)/lib -lstxxl
+CFLAGS_EM = $(CFLAGS) $(STXXL_INC)
+LFLAGS_EM = $(LFLAGS) $(STXXL_LIB)
+
+External_EXE=    run_EM
+
+External_SRC= ExternalMining.cpp utils.cpp
+
+External_HD=     ExternalMining.h baseline.h cmdline.h Makefile
+
+
+External_OBJ = $(External_SRC:.cpp=.o)
+
+External:    $(External_EXE)
+
+$(External_EXE): $(External_OBJ)
+	$(CC) $(CFLAGS_EM) -o $@ $(External_OBJ) $(LFLAGS_EM)
+
+$(External_OBJ): $(MF) $(External_HD)
+
+clean_External:
+	rm -f $(External_OBJ) $(External_EXE) *~
+
+
+
+
+
+
+Counting_EXE=    run_counting_32
+
+Counting_SRC=    counting.cpp suffixTree.cpp stNode.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp
+
+Counting_HD=     counting.h suffixTree.h stNode.h SA_LCP_LCE.h prefixTree.h prefixNode.h Makefile
+
+
+Counting_OBJ=    $(Counting_SRC:.cpp=.o)
+
+
+Counting:    $(Counting_EXE)
+
+$(Counting_EXE): $(Counting_OBJ)
+	$(CC) $(CFLAGS) -o $@ $(Counting_OBJ) $(LFLAGS)
+
+$(Counting_OBJ): $(MF) $(Counting_HD)
+
+clean_Counting:
+	rm -f $(Counting_OBJ) $(Counting_EXE) *~
+
+
+
+
+# r tree
+Counting_stabbed_char_counting_EXE=    run_counting_stabbed_char_32
+Counting_stabbed_char_counting_SRC=    count_stabbed_char_rtree.cpp kkp.cpp suffixTree.cpp stNode.cpp truncatedPrefixTree_char.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp truncatedSuffixTree_char.cpp
+Counting_stabbed_char_counting_HD=     suffixTree.h kkp.h stNode.h truncatedPrefixTree_char.h SA_LCP_LCE.h prefixTree.h prefixNode.h truncatedSuffixTree_char.h Makefile
+
+Counting_stabbed_char_counting_OBJ=    $(Counting_stabbed_char_counting_SRC:.cpp=.o)
+
+
+Counting_stabbed_char_counting:    $(Counting_stabbed_char_counting_EXE)
+
+$(Counting_stabbed_char_counting_EXE): $(Counting_stabbed_char_counting_OBJ)
+	$(CC) $(CFLAGS) -o $@ $(Counting_stabbed_char_counting_OBJ) $(LFLAGS)
+
+$(Counting_stabbed_char_counting_OBJ): $(MF) $(Counting_stabbed_char_counting_HD)
+
+clean_Counting_stabbed_char_counting:
+	rm -f $(Counting_stabbed_char_counting_OBJ) $(Counting_stabbed_char_counting_EXE) *~
+
+
+
+
+
+.PHONY: all clean
