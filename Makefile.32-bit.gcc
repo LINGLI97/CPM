@@ -7,21 +7,16 @@ CFLAGS= -D_USE_32 -fopenmp -msse3 -O3 -fomit-frame-pointer -funroll-loops -DUSE_
 LFLAGS= -std=c++17 -I ./libsdsl/include/ -I /usr/include/boost -I ./include/ -L ./libsdsl/lib/ -lsdsl -ldivsufsort -ldivsufsort64 -Wl,-rpath=$(PWD)/libsdsl/lib
 
 
-
-
-EXE=    run_baselineReporting
-
-SRC=    baseline_reporting.cpp
-
-#SRC=    baseline_Sep02.cpp
-
-HD=     baseline.h cmdline.h Makefile
+.SUFFIXES:
+.SUFFIXES: .cpp .o
 
 
 
 
 
-baselineMining_EXE=    run_baselineMining
+#IM method
+
+baselineMining_EXE=    run_IM
 
 baselineMining_SRC=    baseline_mining.cpp
 
@@ -43,34 +38,8 @@ clean_baselineMining:
 
 
 
-.SUFFIXES:
-.SUFFIXES: .cpp .o
 
-OBJ=    $(SRC:.cpp=.o)
-
-.cpp.o:
-	$(CC) $(CFLAGS) -c $(LFLAGS) $<
-
-all:    $(EXE)
-
-$(EXE): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LFLAGS)
-
-$(OBJ): $(MF) $(HD)
-
-clean:
-	rm -f $(OBJ) $(EXE) *~
-
-clean-all:
-	rm -f $(OBJ) $(EXE) *~
-	rm -r libsdsl
-	rm -r sdsl-lite
-
-
-
-
-
-
+#EM method
 
 STXXL_PATH= ./stxxl
 STXXL_INC= -I$(STXXL_PATH)/include
@@ -102,7 +71,9 @@ clean_External:
 
 
 
-Counting_EXE=    run_counting_32
+#CPC Index (CI)
+
+Counting_EXE=    run_CI
 
 Counting_SRC=    counting.cpp suffixTree.cpp stNode.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp
 
@@ -125,8 +96,44 @@ clean_Counting:
 
 
 
+
+#CPRI method
+
+baselineReporting_EXE=    run_CPRI
+
+baselineReporting_SRC=    baseline_reporting.cpp
+
+
+baselineReporting_HD=     baseline.h cmdline.h Makefile
+baselineReporting_OBJ=    $(baselineReporting_SRC:.cpp=.o)
+
+
+.cpp.o:
+	$(CC) $(CFLAGS) -c $(LFLAGS) $<
+
+
+baselineReporting_OBJ=    $(baselineReporting_SRC:.cpp=.o)
+
+
+baselineReporting:    $(baselineReporting_EXE)
+
+$(baselineReporting_EXE): $(baselineReporting_OBJ)
+	$(CC) $(CFLAGS) -o $@ $(baselineReporting_OBJ) $(LFLAGS)
+
+$(baselineReporting_OBJ): $(MF) $(baselineReporting_HD)
+
+clean_baselineReporting:
+	rm -f $(baselineReporting_OBJ) $(baselineReporting_EXE) *~
+
+
+
+
+
+
+#BCPC Index
+
 # r tree
-Counting_stabbed_char_counting_EXE=    run_counting_stabbed_char_32
+Counting_stabbed_char_counting_EXE=    run_BCPC
 Counting_stabbed_char_counting_SRC=    count_stabbed_char_rtree.cpp kkp.cpp suffixTree.cpp stNode.cpp truncatedPrefixTree_char.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp truncatedSuffixTree_char.cpp
 Counting_stabbed_char_counting_HD=     suffixTree.h kkp.h stNode.h truncatedPrefixTree_char.h SA_LCP_LCE.h prefixTree.h prefixNode.h truncatedSuffixTree_char.h Makefile
 

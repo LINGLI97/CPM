@@ -3,6 +3,7 @@
 
 #include "prefixTree.h"
 
+
 class truncatedPrefixTree {
 public:
     pfNode* root;
@@ -17,7 +18,14 @@ public:
     INT find_lower_bound_value(INT &value);
     vector<INT> *hash_positions;
     void updatePhi();
-    void addPoints(std::vector<Point> &pointsD1,std::vector<Point> &pointsD2,std::vector<Point> &pointsDl,stNode* lightNode);
+    //kd
+//    void addPoints(std::vector<Point> &pointsD1,std::vector<Point> &pointsD2,std::vector<Point> &pointsDl,stNode* lightNode);
+
+//Range tree
+//    void addPoints(std::vector<RangeTree::Point<INT, INT>> &pointsD1,std::vector<RangeTree::Point<INT, INT>>  &pointsD2,std::vector<RangeTree::Point<INT, INT>> &pointsDl,stNode* lightNode);
+//Rtree
+    void addPoints(vector<point5> &pointsD1,vector<point5> &pointsD2,vector<point3> &pointsDl,stNode* lightNode);
+
 
     void deleteTreeIteratively();
 

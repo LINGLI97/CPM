@@ -7,6 +7,9 @@
 #include <stack>
 #include <tuple>
 #include <iostream>
+
+
+
 class truncatedSuffixTree {
 public:
     unsigned char* T;

@@ -136,7 +136,7 @@ void truncatedPrefixTree::updatePhi() {
 
             // top is not leaf
             if (top->numChild()){
-                int maxPhi = 0;
+                INT maxPhi = 0;
                 for (auto &it : top->child) {
                     if (it.second->phi> maxPhi) {
                         maxPhi = it.second->phi;
@@ -156,11 +156,8 @@ void truncatedPrefixTree::updatePhi() {
 }
 
 
-
-
-void truncatedPrefixTree::addPoints(std::vector<Point> &pointsD1, std::vector<Point> &pointsD2,
-                                    std::vector<Point> &pointsDl, stNode *lightNode) {
-
+//R tree
+void truncatedPrefixTree::addPoints(vector<point5> &pointsD1,vector<point5> &pointsD2,vector<point3> &pointsDl,stNode* lightNode){
     std::stack<pfNode *> stack;
     stack.push(root);
     while (!stack.empty()) {
@@ -169,19 +166,33 @@ void truncatedPrefixTree::addPoints(std::vector<Point> &pointsD1, std::vector<Po
         stack.pop();  // Pop before size calculation to avoid double counting
 
         if (lightNode->parent and top->parent){
-//            pointsD1.push_back({{top->parent->depth+1, lightNode->parent->depth +1 , lightNode->preorderId,  top->depth,  lightNode->depth}});
-            pointsD1.push_back({{ lightNode->depth,  top->depth,  lightNode->preorderId,  lightNode->parent->depth +1 ,top->parent->depth+1}});
 
-//            pointsD1.push_back({{lightNode->preorderId,  top->parent->depth+1,  top->depth,  lightNode->parent->depth +1 , lightNode->depth}});
+
+            point5 pD1;
+            bg::set<0>(pD1, lightNode->preorderId);
+            bg::set<1>(pD1, top->parent->depth + 1);
+            bg::set<2>(pD1, top->depth);
+            bg::set<3>(pD1, lightNode->parent->depth + 1);
+            bg::set<4>(pD1, lightNode->depth);
+            pointsD1.emplace_back(pD1);
 
         }
         if (top->parent){
-//            pointsD2.push_back({{lightNode->preorderId,  top->parent->depth+1,  top->depth, lightNode->depth + 1,  top->phi }});
-//            pointsD2.push_back({{ top->parent->depth+1,lightNode->depth + 1,   lightNode->preorderId, top->depth,   top->phi }});
-            pointsD2.push_back({{    top->phi, top->depth,  lightNode->preorderId,lightNode->depth + 1, top->parent->depth+1 }});
+            point5 pD2;
+            bg::set<0>(pD2, lightNode->preorderId);
+            bg::set<1>(pD2, top->parent->depth + 1);
+            bg::set<2>(pD2, top->depth);
+            bg::set<3>(pD2, lightNode->depth + 1);
+            bg::set<4>(pD2, top->phi);
+            pointsD2.emplace_back(pD2);
 
-//                pointsDl.push_back({{ top->parent->depth+1,  top->depth , top->phi}});
-            pointsDl.push_back({{top->phi,   top->depth , top->parent->depth+1 }});
+
+
+            point3 pDl;
+            bg::set<0>(pDl, top->parent->depth + 1);
+            bg::set<1>(pDl, top->depth);
+            bg::set<2>(pDl, top->phi);
+            pointsDl.emplace_back(pDl);
 
 
         }
@@ -195,8 +206,94 @@ void truncatedPrefixTree::addPoints(std::vector<Point> &pointsD1, std::vector<Po
 
 
 
-
 }
+
+
+
+
+
+
+
+
+
+
+//range tree
+//
+//void truncatedPrefixTree::addPoints(std::vector<RangeTree::Point<INT, INT>> &pointsD1, std::vector<RangeTree::Point<INT, INT>> &pointsD2,
+//        std::vector<RangeTree::Point<INT, INT>> &pointsDl, stNode *lightNode) {
+//
+//    std::stack<pfNode *> stack;
+//    stack.push(root);
+//    while (!stack.empty()) {
+//        pfNode *top = stack.top();
+//
+//        stack.pop();  // Pop before size calculation to avoid double counting
+//
+//        if (lightNode->parent and top->parent){
+//
+//            pointsD1.emplace_back(std::vector<INT>{lightNode->preorderId,  top->parent->depth+1,  top->depth,  lightNode->parent->depth +1 , lightNode->depth},0);
+//
+//        }
+//        if (top->parent){
+//            pointsD2.emplace_back(std::vector<INT>{lightNode->preorderId,  top->parent->depth+1,  top->depth, lightNode->depth + 1,  top->phi },0);
+//
+//            pointsDl.emplace_back(std::vector<INT>{ top->parent->depth+1,  top->depth , top->phi},0);
+//
+//
+//        }
+//
+//        for (auto &it: top->child) {
+//            stack.push(it.second);
+//        }
+//
+//
+//    }
+//
+//
+//
+//
+//}
+
+
+
+//KD tree
+
+
+//void truncatedPrefixTree::addPoints(std::vector<Point> &pointsD1, std::vector<Point> &pointsD2,
+//                                    std::vector<Point> &pointsDl, stNode *lightNode) {
+//
+//    std::stack<pfNode *> stack;
+//    stack.push(root);
+//    while (!stack.empty()) {
+//        pfNode *top = stack.top();
+//
+//        stack.pop();  // Pop before size calculation to avoid double counting
+//
+//        if (lightNode->parent and top->parent){
+//
+//            pointsD1.push_back({{lightNode->preorderId,  top->parent->depth+1,  top->depth,  lightNode->parent->depth +1 , lightNode->depth}});
+//
+//        }
+//        if (top->parent){
+//            pointsD2.push_back({{lightNode->preorderId,  top->parent->depth+1,  top->depth, lightNode->depth + 1,  top->phi }});
+//
+//            pointsDl.push_back({{ top->parent->depth+1,  top->depth , top->phi}});
+//
+//
+//        }
+//
+//        for (auto &it: top->child) {
+//            stack.push(it.second);
+//        }
+//
+//
+//    }
+//
+//
+//
+//
+//}
+
 void truncatedPrefixTree::deleteTreeIteratively() {
     std::stack<pfNode*> toDelete;
     toDelete.push(root);

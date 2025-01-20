@@ -14,6 +14,7 @@ typedef int64_t INT;
 
 #ifdef _USE_32
 typedef int32_t INT;
+
 #endif
 class stNode
 {

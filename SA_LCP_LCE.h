@@ -11,8 +11,8 @@ typedef int64_t INT;
 #ifdef _USE_32
 #include <divsufsort.h>                                           // include header for suffix sort
 typedef int32_t INT;
-#endif
 
+#endif
 
 class SA_LCP_LCE
 {

@@ -1,140 +1,205 @@
-Contextual Pattern Matching
-===
+Contextual Pattern Mining and Counting
+============================================================
 
-How to use
-----------
+## **Overview**
+This repository contains the implementation of several algorithms proposed in our paper `Contextual Pattern Mining and Counting`, including `IM Method`, `EM Method`, `CPC Index`, `CPRI Method`, and `BCPC Index Method`. The build process is managed using GNU Make, with modular rules defined in the Makefile for compiling and cleaning.
 
-### Installation
+---
+
+## **Directory Structure**
+```
+.
+├── EM-SparsePhi-0.2.0/        # lib for external LCP construction of EM
+├── include/                   # Header files directory
+├── maxmotif20_changed/        # Potentially a module or additional implementation
+├── psascan/                   # lib for external SA construction of EM
+├── stxxl/                     # STXXL library includes and binaries
+├── baseline_mining.cpp        # Source file for baseline mining
+├── ExternalMining.cpp         # Source file for EM method
+├── counting.cpp               # Source file for CPC index
+├── prefixTree.cpp             # Source file for prefix tree operations
+├── ...                        # other source files
+├── Makefile.32-bit.gcc        # Makefile for 32-bit compilation
+├── Makefile.64-bit.gcc        # Makefile for 64-bit compilation
+
+```
+
+---
+
+## **Dependencies**
+### **Required Tools**
+- **GCC Compiler** (supporting C++17)
+- **GNU Make** (build system)
+
+### **Required Libraries**
+- **SDSL Library**:
+    - Includes `libsdsl`, `libdivsufsort`, and `libdivsufsort64`.
+    - please install [sdsl](https://github.com/simongog/sdsl-lite/tree/master).
+    - ```bash
+      ./pre-install.sh
+      
+- **STXXL Library**:
+    - please install [STXXL](https://stxxl.org/tags/1.4.1/install_unix.html). 
+    - Required for external memory operations.
 
 
-Before compiling and running, please install [sdsl](https://github.com/simongog/sdsl-lite/tree/master).
+- **Boost**:
+    - please install [Boost](https://www.boost.org/).
+    - Required for building range counting data structure.
+  
+- **EM-SparsePhi-0.2.0**:
+    - please install [EM-SparsePhi-0.2.0](https://www.cs.helsinki.fi/group/pads/pSAscan.html).
+    - Required for constructing LCP externally.
+
+
+- **psascan**:
+    - please install [psascan](https://www.cs.helsinki.fi/group/pads/better_em_laca.html).
+    - Required for constructing SA externally.
+
+
+- **kkp**:
+    - please install [kkp](https://github.com/akiutoslahti/kkp/tree/main).
+    - Required for computing the LZ77 factorization used in BCPC index.
+
+
+    
+Ensure the paths for these libraries are correctly configured in the Makefile.
+
+---
+
+## **Build Instructions**
+1. Navigate to the project directory:
+   ```bash
+   cd /path/to/project
+   ```
+
+2. Use the appropriate Makefile depending on your system architecture:
+    - For 64-bit systems:
+      ```bash
+      make -f Makefile.64-bit.gcc
+      ```
+    - For 32-bit systems:
+      ```bash
+      make -f Makefile.32-bit.gcc
+      ```
+
+3. To build specific components, use the corresponding target:
+    - **IM Method**:
+      ```bash
+      make -f Makefile.64-bit.gcc run_IM
+      ```
+    - **EM Method**:
+      ```bash
+      make -f Makefile.64-bit.gcc run_EM
+      ```
+    - **CPC Index**:
+      ```bash
+      make -f Makefile.64-bit.gcc run_CI
+      ```
+    - **CPRI Method**:
+      ```bash
+      make -f Makefile.64-bit.gcc run_CPRI
+      ```
+    - **BCPC Index Method**:
+      ```bash
+      make -f Makefile.64-bit.gcc run_BCPC
+      ```
+
+4. R Index competitor
+    - Please refer to [here](https://github.com/nicolaprezza/r-index) for the implementation of R Index
+
+
+
+### Usage
+
+------
+# CPM Problem
+#### **1. EM Method**
+Run the EM Method with the following command:
 ```bash
-./pre-install.sh
+./run_EM -f input.txt -x 6 -y 6 -m 3 -t 1000
 ```
-### LZ77 method
+- **Explanation**:
+    - `-f input.txt`: Specifies the input text file to process.
+    - `-x 6`: Specifies the context size in one dimension (e.g., rows).
+    - `-y 6`: Specifies the context size in another dimension (e.g., columns).
+    - `-m 3`: Specifies the minimum pattern length for mining.
+    - `-t 1000`: Specifies the frequency threshold for patterns.
 
-make command:
+#### **2. Baseline Mining**
+Run the baseline mining algorithm:
 ```bash
-make run_counting_stabbed_char
+./run_IM -f input.txt -x 6 -y 6 -m 3 -t 1000
 ```
-Then run:
-```bash
-./run_counting_stabbed_char -f dna_1M.txt -p pattern.txt
-```
-The `-f` option determines the input file path;   
-The `-p` option determines the pattern file path of P in the given P algorithm.  
+- **Explanation**:
+    - Similar to `run_EM`, but uses the baseline mining method.
+------
+
+# CPC Problem
+
+1.**R-Index method**:
+    - Build the R-Index:
+      ```bash
+      ./ri-build input.txt
+      ```
+    - Locate patterns:
+      ```bash
+      ./ri-locate -c input.txt input.txt.ri pattern.txt_r_index 2 2
+      ```
+- **Explanation**:
+    - `-c input.txt`: The input text file.
+    - `input.txt.ri`: The R-Index file generated using `ri-build`.
+    - `pattern.txt_r_index`: The file containing patterns for R-Index querying.
+    - `2 2`: Context sizes for the query.
+
+2.**Run baseline reporting**:
+   ```bash
+   ./run_CPRI -f input.txt -p pattern.txt
+   ```
+
+3.**CPC Index**:
+   ```bash
+   ./run_CI -f input.txt -p pattern.txt
+   ```
+- **Explanation**:
+    - `-f input.txt`: Specifies the input text file to process.
+    - `-p pattern.txt`: Specifies the file containing patterns to be searched.
+
+4.**BCPC Index**:
+   ```bash
+   ./run_BCPC -f input.txt -p pattern.txt
+   ```
+- **Explanation**:
+    - Similar to `run_CI`, but uses the BCPC Index method for pattern counting.
 
 
 
-
-
-### Counting Sampling
-
-make command:
-```bash
-make run_counting_sampled
-```
-Then run:
-```bash
-./run_counting_sampled -f dna_1M.txt -p pattern.txt -c 2
-```
-The `-f` option determines the input file path;   
-The `-p` option determines the pattern file path of P in the given P algorithm.  
-In pattern.txt, there are multiple pattern queries in the form of:
-```
-CAT 1 3
-TA 1 2
-...
-```
-Every line represents a query: pattern x y.  
-The `-c` option determines sampling a suffix in every log(n) / c distance (When c is bigger, the number of suffixed sampled is more.)
-
-### External Memory
-
-Install  [psascan](https://www.cs.helsinki.fi/group/pads/LCPscan.html), [EM-SparsePhi-0.2.0](https://www.cs.helsinki.fi/group/pads/better_em_laca.html) and [stxxl](https://stxxl.org/tags/1.4.1/index.html).
-
-
-make command:
-```bash
-make run_EM
-```
-Running:
-```bash
- ./run_EM -f input.txt -x 1 -y 1 -m 2 -i index -r 1024
-```
-The `-f` option determines the input file path;  
-The `-x` and `-y` option determine the length of context X and Y.  
-The `-m` option determines the length of pattern P in the mining algorithm.  
-The `-i` option determines the name of output index generated by psascan and EM-SparsePhi-0.2.0.  
-The `-r` option determines the usage of RAM (Mi).  
-
-
-### Counting
-make command:
-```bash
-make run_counting
-```
-Running:
-```bash
- ./run_counting -f input.txt -p pattern.txt -x 1 -y 2
-```
-The `-f` option determines the input file path;   
-The `-p` option determines the pattern file path of P in the given P algorithm.  
-The `-l` option determines the length of the context.  
-The `-x` and `-y` option determine the length of context X and Y.    
-
-
-### Test counting code
-```bash
-make run_test_counting
-```
-Running:
-```bash
- ./run_test_counting -L 5 -R 100 -r 1000000
-```
-The `-L` option determines the minimal length of randomly generated text string;  
-The `-R` option determines the maximal length of randomly generated text string.  
-The `-r` option determines the number of test rounds.  
-
-
-### Baseline
-
-```bash
-
- ./CPM -f input.txt -p pattern.txt -l 2 -m 3
-```
-The `-f` option determines the input file path;   
-The `-p` option determines the pattern file path of P in the given P algorithm.  
-The `-l` option determines the length of the context.  
-The `-m` option determines the length of pattern P in the mining algorithm.  
-
-
-
-
-### Test the correctness
-If you would like to compile the test.cpp to test the consistence between the results of the baseline and naive checker we implemented:
-```bash
-make -f Makefile.32-bit.gcc run_test
-```
-or:
-```bash
-make -f Makefile.64-bit.gcc run_test
-```
-Then:
-```bash
-./run_test -L 3 -R 2000 -r 100000
+### Examples
 
 ```
-The `-L` option determines the minimal length of randomly generated text string;  
-The `-R` option determines the maximal length of randomly generated text string.  
-The `-r` option determines the number of test rounds.  
+
+```
+
+Datasets
+
+
+The preprocessed datasets are available at [Google Drive]().
+
+------
+
+## **Notes**
+- Make sure the required libraries (SDSL, STXXL and so on) are properly installed and accessible from the paths specified in the Makefile.
+- Modify the `Makefile` variables (`CFLAGS`, `LFLAGS`, etc.) if your library paths or compiler configurations differ.
+
+
+------
 
 
 
-Once the inconsistency is found, the specific string and their results will be printed.
 
+License
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+------
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.

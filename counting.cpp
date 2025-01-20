@@ -9,7 +9,7 @@
 
 #include <string>
 #include <getopt.h>
-#include <assert.h>
+//#include <assert.h>
 #include <sys/time.h>
 #include <unordered_set>
 
@@ -20,7 +20,7 @@
 #include "counting.h"
 #include "suffixTree.h"
 #include "prefixTree.h"
-#include "kd_tree.h"
+//#include "kd_tree.h"
 #include <vector>
 #include <malloc.h>
 #include <algorithm>    // std::sort
@@ -188,6 +188,7 @@ int main (int argc, char *argv[])
 
     parser.add<string>("pattern", 'p', "the path to pattern file", false, "pattern.txt");
 
+
     parser.parse_check(argc, argv);
 
 
@@ -196,6 +197,7 @@ int main (int argc, char *argv[])
     std::string filename = parser.get<std::string>("filepath");
     std::string patternPath = parser.get<std::string>("pattern");
 
+    const int Rstar = 32;
 
     /* readfile into text_string and pattern */
     unsigned char* text_string;
@@ -218,10 +220,13 @@ int main (int argc, char *argv[])
     long long IndexSpace_start = memory_usage();
 
     //---------------Index---------------//
-    std::vector<Point> pointsD1;
-    std::vector<Point> pointsD2;
+    using point5 = bg::model::point<INT, 5, bg::cs::cartesian>;
+    using point3 = bg::model::point<INT, 3, bg::cs::cartesian>;
 
-    std::unordered_map<INT, KDTree*> preorderID2KDTree;
+    std::vector<point5> pointsD1;
+    std::vector<point5> pointsD2;
+
+    std::unordered_map<INT,bgi::rtree<point3, bgi::rstar<Rstar>>*> preorderID2RTree;
 
 
     // Suffix tree construction for original string
@@ -251,7 +256,8 @@ int main (int argc, char *argv[])
     for (auto& lightNode: ST.lightNodes){
 //        cout<<cnt<<endl;
         cnt++;
-        std::vector<Point> pointsDl;
+        std::vector<point3> pointsDl;
+
         vector <pair<INT, INT>> L; // the idx in \overline(SA), phi
 
         for (auto &leaf: lightNode->leaves_start_depth) {
@@ -273,10 +279,12 @@ int main (int argc, char *argv[])
             PT.updatePhi();
             PT.addPoints(pointsD1,pointsD2, pointsDl,lightNode);
 
-            KDTree* KD_Dl = new KDTree(pointsDl);
+//            KDTree* KD_Dl = new KDTree(pointsDl);
+//            preorderID2KDTree[lightNode->preorderId] = KD_Dl;
 
 
-            preorderID2KDTree[lightNode->preorderId] = KD_Dl;
+            bgi::rtree<point3, bgi::rstar<Rstar>>* RT_Dl= new bgi::rtree<point3, bgi::rstar<Rstar>>(pointsDl);
+            preorderID2RTree[lightNode->preorderId] = RT_Dl;
 
         }
     }
@@ -286,21 +294,23 @@ int main (int argc, char *argv[])
     }
 
 
-    KDTree KD_D1(pointsD1);
+    bgi::rtree<point5, bgi::rstar<Rstar>> RT_D1(pointsD1);
+    bgi::rtree<point5, bgi::rstar<Rstar>> RT_D2(pointsD2);
 
-    KDTree KD_D2(pointsD2);
 
-    cout<<"pointsD1.size(): "<<pointsD1.size()<<endl;
 
-    cout<<"pointsD2.size(): "<<pointsD2.size()<<endl;
-    cout<<"preorderID2KDTree.size(): "<<preorderID2KDTree.size()<<endl;
 
     auto Construction_end = std::chrono::high_resolution_clock::now();
 
 
     double Construction_time = std::chrono::duration_cast < std::chrono::microseconds > (Construction_end - Construction_start).count()*0.000001;
 
+    cout<<"Maximum number of elements in nodes is set to "<< Rstar<<endl;
 
+    cout<<"pointsD1.size(): "<<pointsD1.size()<<endl;
+
+    cout<<"pointsD2.size(): "<<pointsD2.size()<<endl;
+    cout<<"preorderID2RTree.size(): "<<preorderID2RTree.size()<<endl;
 
 
 
@@ -367,7 +377,6 @@ int main (int argc, char *argv[])
         }
 
         INT counts=0;
-
         if (up->heavy){
 
             //D_1
@@ -383,17 +392,28 @@ int main (int argc, char *argv[])
             }
 
 
-            vector<pair<INT, INT>> ranges_D1 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, text_size},
-                                                      {0, patternSizes[i] +y},{ patternSizes[i] +y,  text_size}};
+
+            point5 min_point_D1, max_point_D1;
+
+            bg::set<0>(min_point_D1, static_cast<INT>(up->preorderId));
+            bg::set<1>(min_point_D1, static_cast<INT>(0));
+            bg::set<2>(min_point_D1, static_cast<INT>(x));
+            bg::set<3>(min_point_D1, static_cast<INT>(0));
+            bg::set<4>(min_point_D1, static_cast<INT>(patternSizes[i] + y));
+
+            bg::set<0>(max_point_D1, static_cast<INT>(rightpreorderId));
+            bg::set<1>(max_point_D1, static_cast<INT>(x));
+            bg::set<2>(max_point_D1, static_cast<INT>(text_size));
+            bg::set<3>(max_point_D1, static_cast<INT>(patternSizes[i] + y));
+            bg::set<4>(max_point_D1, static_cast<INT>(text_size));
 
 
-//            for (const auto& range : ranges_D1) {
-//                cout << "{" << range.first << ", " << range.second << "}" << endl;
-//            }
 
 
-
-            INT result_D1 = KD_D1.rangeSearch(ranges_D1);
+            bg::model::box<point5> query_box_D1(min_point_D1, max_point_D1);
+            auto range_D1 = boost::make_iterator_range(bgi::qbegin(RT_D1, bgi::intersects(query_box_D1)), bgi::qend(RT_D1));
+//
+            INT result_D1 = boost::distance(range_D1);
 #ifdef VERBOSE
         cout<<"result_D1 = "<<result_D1<<endl;
         cout<<"---------------------------------------"<<endl;
@@ -401,14 +421,23 @@ int main (int argc, char *argv[])
             //D_2
 
 
+            point5 min_point_D2, max_point_D2;
 
-            vector<pair<INT, INT>> ranges_D2 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, text_size},
-                                                      {0, patternSizes[i] +y},{ patternSizes[i] +y,  text_size}};
+            bg::set<0>(min_point_D2, static_cast<INT>(up->preorderId));
+            bg::set<1>(min_point_D2, static_cast<INT>(0));
+            bg::set<2>(min_point_D2, static_cast<INT>(x));
+            bg::set<3>(min_point_D2, static_cast<INT>(0));
+            bg::set<4>(min_point_D2, static_cast<INT>(patternSizes[i] + y));
 
-//            for (const auto& range : ranges_D2) {
-//                cout << "{" << range.first << ", " << range.second << "}" << endl;
-//            }
-            INT result_D2 = KD_D2.rangeSearch(ranges_D2);
+            bg::set<0>(max_point_D2, static_cast<INT>(rightpreorderId));
+            bg::set<1>(max_point_D2, static_cast<INT>(x));
+            bg::set<2>(max_point_D2, static_cast<INT>(text_size));
+            bg::set<3>(max_point_D2, static_cast<INT>(patternSizes[i] + y));
+            bg::set<4>(max_point_D2, static_cast<INT>(text_size));
+            bg::model::box<point5> query_box_D2(min_point_D2, max_point_D2);
+            auto range_D2 = boost::make_iterator_range(bgi::qbegin(RT_D2, bgi::intersects(query_box_D2)), bgi::qend(RT_D2));
+            INT result_D2 = boost::distance(range_D2);
+//
 
 #ifdef VERBOSE
             cout<<"result_D2 = "<<result_D2<<endl;
@@ -427,15 +456,32 @@ int main (int argc, char *argv[])
             lowest_ul = lowest_ul->parent;
 
 
-            vector<pair<INT, INT>> ranges_Dl = {{0,  x}, { x, text_size}, {  patternSizes[i] + y,  text_size}};
-
-//            for (const auto& range : ranges_Dl) {
-//                cout << "{" << range.first << ", " << range.second << "}" << endl;
-//            }
 
 
 
-            INT result_Dl = preorderID2KDTree[lowest_ul->preorderId]->rangeSearch(ranges_Dl);
+            INT result_Dl =0;
+            if (preorderID2RTree[lowest_ul->preorderId] != nullptr){
+                point3 min_point_Dl, max_point_Dl;
+
+                bg::set<0>(min_point_Dl, static_cast<INT>(0));
+                bg::set<1>(min_point_Dl, static_cast<INT>(x));
+                bg::set<2>(min_point_Dl, static_cast<INT>(patternSizes[i] + y));
+
+                bg::set<0>(max_point_Dl, static_cast<INT>(x));
+                bg::set<1>(max_point_Dl, static_cast<INT>(text_size));
+                bg::set<2>(max_point_Dl, static_cast<INT>(text_size));
+
+
+                bg::model::box<point3> query_box_Dl(min_point_Dl, max_point_Dl);
+                auto range_Dl = boost::make_iterator_range(bgi::qbegin(*(preorderID2RTree[lowest_ul->preorderId]), bgi::intersects(query_box_Dl)), bgi::qend(*(preorderID2RTree[lowest_ul->preorderId])));
+                // Count the number of matches
+                result_Dl = boost::distance(range_Dl);
+            }
+
+
+
+
+
 #ifdef VERBOSE
 
             cout<<"result_Dl = "<<result_Dl<<endl;
@@ -460,34 +506,53 @@ int main (int argc, char *argv[])
                 current_up = rightchild;
             }
 
+            point5 min_point_D1, max_point_D1;
+
+            bg::set<0>(min_point_D1, static_cast<INT>(up->preorderId));
+            bg::set<1>(min_point_D1, static_cast<INT>(0));
+            bg::set<2>(min_point_D1, static_cast<INT>(x));
+            bg::set<3>(min_point_D1, static_cast<INT>(0));
+            bg::set<4>(min_point_D1, static_cast<INT>(patternSizes[i] + y));
+
+            bg::set<0>(max_point_D1, static_cast<INT>(rightpreorderId));
+            bg::set<1>(max_point_D1, static_cast<INT>(x));
+            bg::set<2>(max_point_D1, static_cast<INT>(text_size));
+            bg::set<3>(max_point_D1, static_cast<INT>(patternSizes[i] + y));
+            bg::set<4>(max_point_D1, static_cast<INT>(text_size));
 
 
-            vector<pair<INT, INT>> ranges_D1 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, text_size},
-                                                      {0, patternSizes[i] +y},{ patternSizes[i] +y,  text_size}};
 
-//            for (const auto& range : ranges_D1) {
-//                cout << "{" << range.first << ", " << range.second << "}" << endl;
-//            }
 
-            INT result_D1 = KD_D1.rangeSearch(ranges_D1);
+            bg::model::box<point5> query_box_D1(min_point_D1, max_point_D1);
+            auto range_D1 = boost::make_iterator_range(bgi::qbegin(RT_D1, bgi::intersects(query_box_D1)), bgi::qend(RT_D1));
+//
+            INT result_D1 = boost::distance(range_D1);
 #ifdef VERBOSE
+
             cout<<"result_D1 = "<<result_D1<<endl;
 
         cout<<"---------------------------------------"<<endl;
 #endif
 
             //D_2
+            point5 min_point_D2, max_point_D2;
 
+            bg::set<0>(min_point_D2, static_cast<INT>(up->preorderId));
+            bg::set<1>(min_point_D2, static_cast<INT>(0));
+            bg::set<2>(min_point_D2, static_cast<INT>(x));
+            bg::set<3>(min_point_D2, static_cast<INT>(0));
+            bg::set<4>(min_point_D2, static_cast<INT>(patternSizes[i] + y));
 
-            vector<pair<INT, INT>> ranges_D2 = {{ up->preorderId,  rightpreorderId}, {0, x}, { x, text_size},
-                                                      {0, patternSizes[i] +y},{ patternSizes[i] +y,  text_size}};
-//            for (const auto& range : ranges_D2) {
-//                cout << "{" << range.first << ", " << range.second << "}" << endl;
-//            }
-            INT result_D2 = KD_D2.rangeSearch(ranges_D2);
+            bg::set<0>(max_point_D2, static_cast<INT>(rightpreorderId));
+            bg::set<1>(max_point_D2, static_cast<INT>(x));
+            bg::set<2>(max_point_D2, static_cast<INT>(text_size));
+            bg::set<3>(max_point_D2, static_cast<INT>(patternSizes[i] + y));
+            bg::set<4>(max_point_D2, static_cast<INT>(text_size));
+            bg::model::box<point5> query_box_D2(min_point_D2, max_point_D2);
+            auto range_D2 = boost::make_iterator_range(bgi::qbegin(RT_D2, bgi::intersects(query_box_D2)), bgi::qend(RT_D2));
+            INT result_D2 = boost::distance(range_D2);
 
-
-            counts = result_D1 + result_D2;
+            counts = result_D1 + result_D2 ;
 
 #ifdef VERBOSE
 
@@ -507,7 +572,7 @@ int main (int argc, char *argv[])
 
         cout<<"There are "<<counts<< " distinct XPY that occur in T."<<endl;
 
-        cout<<"Time for query of counting: "<<query_time<<endl;
+        cout<<"Time for query: "<<query_time<<endl;
         cout<<"------------------------------------------------------"<<endl;
 
         free(pattern_rev);
@@ -520,7 +585,7 @@ int main (int argc, char *argv[])
 
 
 
-    for (auto& pair : preorderID2KDTree) {
+    for (auto& pair : preorderID2RTree) {
         delete pair.second;
     }
 
