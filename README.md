@@ -143,13 +143,13 @@ Run the baseline mining algorithm:
 ```
 - Locate patterns:
 ```bash
-./ri-locate -c input.txt input.txt.ri pattern.txt_r_index 2 2
+./ri-locate -c input.txt input.txt.ri pattern.txt_r_index  6
 ```
 - **Explanation**:
     - `-c input.txt`: The input text file.
     - `input.txt.ri`: The R-Index file generated using `ri-build`.
     - `pattern.txt_r_index`: The file containing patterns for R-Index querying.
-    - `2 2`: Context sizes for the query.
+    - `6 6`: Context sizes for the query.
 
 2.**Run baseline reporting**:
    ```bash
