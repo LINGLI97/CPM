@@ -1,5 +1,4 @@
 //
-// Created on 11/09/24.
 // This is the code of counting version of Contextual pattern mining
 // Input: a text $T$ of length $n = |T|$, a pattern $P$ of length $m = |P|$, and two integers $x$, $y$ where $x, y \geq 0$,
 // Output: the frequency count of each distinct substring $XPY$ that occurs in $T$, where $|X|=x$, $|Y|=y$.

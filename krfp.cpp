@@ -1,7 +1,4 @@
 
-// Compile with g++ -std=c++20 -O3 utils.cpp kr_greg.cpp -o kr_greg
-// run with ./kr_greg
-
 // Added a subtract function 
 
 /**

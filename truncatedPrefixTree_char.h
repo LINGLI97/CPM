@@ -1,5 +1,5 @@
-#ifndef CPMLING_PREFIXTREE_CHAR_H
-#define CPMLING_PREFIXTREE_CHAR_H
+#ifndef CPM_PREFIXTREE_CHAR_H
+#define CPM_PREFIXTREE_CHAR_H
 
 #include "prefixTree.h"
 

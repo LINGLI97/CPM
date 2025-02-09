@@ -9,18 +9,18 @@ This repository contains the implementation of several algorithms proposed in ou
 ## **Directory Structure**
 ```
 .
-├── EM-SparsePhi-0.2.0/        # lib for external LCP construction of EM
-├── include/                   # Header files directory
-├── psascan/                   # lib for external SA construction of EM
-├── stxxl/                     # STXXL library includes and binaries
-├── baseline_mining.cpp        # Source file for IM method
-├── ExternalMining.cpp         # Source file for EM method
-├── counting.cpp               # Source file for CPC index
-├── prefixTree.cpp             # Source file for prefix tree operations
-├── ...                        # other source files
-├── Makefile.32-bit.gcc        # Makefile for 32-bit compilation
-├── Makefile.64-bit.gcc        # Makefile for 64-bit compilation
-
+├── EM-SparsePhi-0.2.0/           # lib for external LCP construction of EM
+├── include/                      # Header files directory
+├── psascan/                      # lib for external SA construction of EM
+├── stxxl/                        # STXXL library includes and binaries
+├── baseline_mining.cpp           # Source file for IM method
+├── ExternalMining.cpp         	  # Source file for EM method
+├── baseline_reporting.cpp        # Source file for CPR Index method
+├── counting.cpp                  # Source file for CPC index method
+├── count_stabbed_char_rtree.cpp  # Source file for BCPC index method
+├── ...                           # other source files
+├── Makefile.32-bit.gcc           # Makefile for 32-bit compilation
+├── Makefile.64-bit.gcc           # Makefile for 64-bit compilation
 ```
 
 ---
@@ -105,7 +105,7 @@ Ensure the paths for these libraries are correctly configured in the Makefile.
       ```
 
 4. R Index competitor
-    - Please refer to [here](https://github.com/nicolaprezza/r-index) for the implementation of R Index
+    - Please refer to [here](https://github.com/nicolaprezza/r-index) for the implementation of R Index.
 
 
 
@@ -114,7 +114,7 @@ Ensure the paths for these libraries are correctly configured in the Makefile.
 ------
 # CPM Problem
 #### **1. EM Method**
-Run the EM Method with the following command:
+Run EM Method with the following command:
 ```bash
 ./run_EM -f input.txt -x 6 -y 6 -m 3 -t 1000
 ```
@@ -125,25 +125,26 @@ Run the EM Method with the following command:
     - `-m 3`: Specifies the minimum pattern length for mining.
     - `-t 1000`: Specifies the frequency threshold for patterns.
 
-#### **2. Baseline Mining**
-Run the baseline mining algorithm:
+#### **2. IM Method**
+Run IM Method with the following command:
 ```bash
 ./run_IM -f input.txt -x 6 -y 6 -m 3 -t 1000
 ```
 - **Explanation**:
-    - Similar to `run_EM`, but uses the baseline mining method.
+    - Similar to `run_EM`, but uses the IM method.
 ------
 
 # CPC Problem
 
 1.**R-Index method**:
+
 - Build the R-Index:
 ```bash
 ./ri-build input.txt
 ```
 - Locate patterns:
 ```bash
-./ri-locate -c input.txt input.txt.ri pattern.txt_r_index  6
+./ri-locate -c input.txt input.txt.ri pattern.txt_r_index  6 6
 ```
 - **Explanation**:
     - `-c input.txt`: The input text file.
@@ -152,6 +153,7 @@ Run the baseline mining algorithm:
     - `6 6`: Context sizes for the query.
 
 2.**Run baseline reporting**:
+
    ```bash
    ./run_CPRI -f input.txt -p pattern.txt
    ```
