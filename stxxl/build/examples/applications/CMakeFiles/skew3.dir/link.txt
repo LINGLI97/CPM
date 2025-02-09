@@ -1,1 +1,0 @@
-/usr/bin/c++  -W -Wall -pedantic -Wno-long-long -Wextra -ftemplate-depth=1024 -std=c++11 -fopenmp -O3 -DNDEBUG -rdynamic CMakeFiles/skew3.dir/skew3.cpp.o -o skew3  ../../lib/libstxxl.a 

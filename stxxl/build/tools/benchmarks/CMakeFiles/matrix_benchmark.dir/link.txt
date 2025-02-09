@@ -1,1 +1,0 @@
-/usr/bin/c++  -W -Wall -pedantic -Wno-long-long -Wextra -ftemplate-depth=1024 -std=c++11 -fopenmp -O3 -DNDEBUG -rdynamic CMakeFiles/matrix_benchmark.dir/matrix_benchmark.cpp.o -o matrix_benchmark  ../../lib/libstxxl.a 
