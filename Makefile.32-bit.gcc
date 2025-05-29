@@ -14,6 +14,7 @@ LFLAGS= -std=c++17 -I ./libsdsl/include/ -I /usr/include/boost -I ./include/ -L 
 
 
 
+
 #IM method
 
 baselineMining_EXE=    run_IM
@@ -71,9 +72,9 @@ clean_External:
 
 
 
-#CPC Index (CI)
+#CPC Index without optimization (CI-)
 
-Counting_EXE=    run_CI
+Counting_EXE=    run_CI_minus
 
 Counting_SRC=    counting.cpp suffixTree.cpp stNode.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp
 
@@ -130,10 +131,10 @@ clean_baselineReporting:
 
 
 
-#BCPC Index
+#CPC Index
 
 # r tree
-Counting_stabbed_char_counting_EXE=    run_BCPC
+Counting_stabbed_char_counting_EXE=    run_CPC
 Counting_stabbed_char_counting_SRC=    count_stabbed_char_rtree.cpp kkp.cpp suffixTree.cpp stNode.cpp truncatedPrefixTree_char.cpp SA_LCP_LCE.cpp prefixTree.cpp prefixNode.cpp truncatedSuffixTree_char.cpp
 Counting_stabbed_char_counting_HD=     suffixTree.h kkp.h stNode.h truncatedPrefixTree_char.h SA_LCP_LCE.h prefixTree.h prefixNode.h truncatedSuffixTree_char.h Makefile
 

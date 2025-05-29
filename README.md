@@ -2,7 +2,7 @@ Contextual Pattern Mining and Counting
 ============================================================
 
 ## **Overview**
-This repository contains the implementation of several algorithms proposed in our paper `Contextual Pattern Mining and Counting`, including `IM Method`, `EM Method`, `CPC Index`, `CPRI Method`, and `BCPC Index Method`. The build process is managed using GNU Make, with modular rules defined in the Makefile for compiling and cleaning.
+This repository contains the implementation of several algorithms proposed in our paper `Contextual Pattern Mining and Counting`, including `IM Method`, `EM Method`, `CPC Index without optimization`, `CPRI Method`, and `CPC Index Method`. The build process is managed using GNU Make, with modular rules defined in the Makefile for compiling and cleaning.
 
 ---
 
@@ -16,8 +16,8 @@ This repository contains the implementation of several algorithms proposed in ou
 ├── baseline_mining.cpp           # Source file for IM method
 ├── ExternalMining.cpp         	  # Source file for EM method
 ├── baseline_reporting.cpp        # Source file for CPR Index method
-├── counting.cpp                  # Source file for CPC index method
-├── count_stabbed_char_rtree.cpp  # Source file for BCPC index method
+├── counting.cpp                  # Source file for CPC index without optimization method
+├── count_stabbed_char_rtree.cpp  # Source file for CPC index method
 ├── ...                           # other source files
 ├── Makefile.32-bit.gcc           # Makefile for 32-bit compilation
 ├── Makefile.64-bit.gcc           # Makefile for 64-bit compilation
@@ -58,7 +58,7 @@ This repository contains the implementation of several algorithms proposed in ou
 
 - **kkp**:
     - please install [kkp](https://github.com/akiutoslahti/kkp/tree/main).
-    - Required for computing the LZ77 factorization used in BCPC index.
+    - Required for computing the LZ77 factorization used in CPC index.
 
 
 ​    
@@ -91,19 +91,20 @@ Ensure the paths for these libraries are correctly configured in the Makefile.
       ```bash
       make -f Makefile.64-bit.gcc run_EM
       ```
-    - **CPC Index**:
+    - **CPC Index without optimization (CI-)**:
+      
       ```bash
-      make -f Makefile.64-bit.gcc run_CI
+      make -f Makefile.64-bit.gcc run_CI_minus
       ```
     - **CPRI Method**:
       ```bash
       make -f Makefile.64-bit.gcc run_CPRI
       ```
-    - **BCPC Index Method**:
+    - **CPC Index Method**:
       ```bash
-      make -f Makefile.64-bit.gcc run_BCPC
+      make -f Makefile.64-bit.gcc run_CPC
       ```
-
+    
 4. R Index competitor
     - Please refer to [here](https://github.com/nicolaprezza/r-index) for the implementation of R Index.
 
@@ -158,27 +159,27 @@ Run IM Method with the following command:
    ./run_CPRI -f input.txt -p pattern.txt
    ```
 
-3.**CPC Index**:
+3.**CPC Index without optimization (CI-)**:
    ```bash
-   ./run_CI -f input.txt -p pattern.txt
+   ./run_CI_minus -f input.txt -p pattern.txt
    ```
 - **Explanation**:
     - `-f input.txt`: Specifies the input text file to process.
     - `-p pattern.txt`: Specifies the file containing patterns to be searched.
 
-4.**BCPC Index**:
+4.**CPC Index**:
    ```bash
-   ./run_BCPC -f input.txt -p pattern.txt
+   ./run_CPC -f input.txt -p pattern.txt
    ```
 - **Explanation**:
-    - Similar to `run_CI`, but uses the BCPC Index method for pattern counting.
+    - Similar to `run_CI_minus`, but uses the CPC Index method for pattern counting.
 
     
 ------
 ## **Datasets**
 
 
-The preprocessed datasets are available at [Google Drive](https://drive.google.com/file/d/1-okJkGUUGBtHnpzdk6rLXab8M4ZnU9Pq/view?usp=sharing).
+The preprocessed datasets are available at [Google Drive](https://drive.google.com/file/d/1xnE7YzU55Ji7-QxtIe0d41L4fPrlsTG5/view?usp=sharing).
 
 ------
 
